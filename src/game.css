@@ -1,0 +1,135 @@
+/* Color Theme Swatches in Hex */
+.Game-Design-1-hex { color: #0F9BF2; }
+.Game-Design-2-hex { color: #29F2F2; }
+.Game-Design-3-hex { color: #F29F05; }
+.Game-Design-4-hex { color: #F25C05; }
+.Game-Design-5-hex { color: #A64029; }
+
+
+:root {
+  --felt-color: #005700;
+  --felt-border-color: #999;
+  --fold-color: #F29F05;
+  --call-color: #0F9BF2;
+  --raise-color: #F25C05;
+  --suite-h-color: #ee2222;
+  --suite-d-color: #ee2222;
+  --suite-c-color: #222;
+  --suite-s-color: #222;
+}
+
+input, button {
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  font-size: 11pt;
+  margin: 3px;
+  padding: 3px 7px;
+}
+
+.table {
+  position: absolute;
+  width: 850px;
+  border: 10px solid var(--felt-border-color);
+  height: 400px;
+  border-radius: 250px;
+  left: 50%;
+  margin-left: -425px;
+  top: 50%;
+  margin-top: -250px;
+  background: var(--felt-color);
+  box-shadow: 3px 3px 5px #555;
+  :before {
+    content: '';
+    border: 1px solid #888;
+    position: absolute;
+    width: 78%;
+    height: 18%;
+  }
+}
+.buttons {
+  position: absolute;
+  width: 100%;
+  left: 0;
+  bottom: -120px;
+  /*border: 1px solid #000;*/
+  text-align: center;
+}
+.action-button {
+  width: 25%;
+  padding: 10px 0;
+}
+
+.card {
+  border: 1px solid #ddd;
+  margin: 3px;
+  width: 30px;
+  height: 60px;
+  padding: 8px;
+  border-radius: 4px;
+  background: #fff;
+}
+.suite-h, .suite-d {
+  color: #ee2222;
+  border-color: #ee8888;
+}
+
+.player-name {
+  position: absolute;
+  left: 50%;
+  width: 90%;
+  margin-left: -45%;
+  /*border: 2px solid #555;*/
+  background-color: #555;
+  color: #fff;
+  padding: 3px 0;
+  border-radius: 2px;
+  text-align: center;
+  top: 48%;
+  z-index: 3;
+}
+.player-hand {
+  position: absolute;
+  left: 25%;
+  width: 50%;
+  text-align: center;
+  bottom: 50%;
+  z-index: 2;
+}
+.player-stack {
+  position: absolute;
+  top: 75%;
+  text-align: center;
+  width: 90%;
+  left: 5%;
+}
+.player-bet {
+  position: absolute;
+  top: -20px;
+  color: #fff;
+}
+
+/* .player:not(.me) * {
+  display: none;
+} */
+.action-fold {
+  background-color: var(--fold-color);
+}
+.action-call {
+  background-color: var(--call-color);
+}
+.action-raise {
+  background-color: var(--raise-color);
+}
+.player {
+  padding: 4px;
+  border: 1px solid #ddd;
+  width: 200px;
+  position: absolute;
+  height: 100px;
+}
+#player-1 { bottom: -50px; left: calc(50% + 50px); }
+#player-2 { bottom: -50px; right: calc(50% + 50px); }
+#player-3 { top: calc(50% - 48px); left: -50px; }
+#player-4 { top: -50px; right: calc(50% + 50px); }
+#player-5 { top: -50px; left: calc(50% + 50px); }
+#player-6 { top: calc(50% - 48px); right: -50px; }

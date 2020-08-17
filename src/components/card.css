@@ -1,0 +1,59 @@
+.pcblock {
+	border: 1px dotted #ccc;
+	border-radius: 2px;
+	font-family: "arial narrow", arial, helvetica, sans-serif;
+	display: inline-block;
+	line-height: 1em;
+}
+.pccard {
+	display: inline-block;
+	padding: 0px 3px 2px 3px;
+	margin: 1px;
+	border-radius: 2px;
+	font-size: .7em;
+	cursor: default;
+	border-width: 1px;
+	border-style: solid;
+}
+
+.pcblock-font-Roboto_Condensed { font-family: "Roboto Condensed", "arial narrow", arial, helvetica, sans-serif; }
+.pcblock-font-Fira_Sans_Condensed { font-family: "Fira Sans Condensed", "arial narrow", arial, helvetica, sans-serif; }
+.pcblock-font-Open_Sans_Condensed { font-family: "Open Sans Condensed", "arial narrow", arial, helvetica, sans-serif; }
+.pcblock-font-Barlow_Condensed { font-family: "Barlow Condensed", "arial narrow", arial, helvetica, sans-serif; }
+.pcblock-font-Ubuntu_Condensed { font-family: "Ubuntu Condensed", "arial narrow", arial, helvetica, sans-serif; }
+.pcblock-font-Asap_Condensed { font-family: "Asap Condensed", "arial narrow", arial, helvetica, sans-serif; }
+.pcblock-font-IBM_Plex_Sans_Condensed { font-family: "IBM Plex Sans Condensed", "arial narrow", arial, helvetica, sans-serif; }
+
+.pcblock-standard-standard .pccard-clubs { background-color: #fff; color: #000; border-color: #000; }	.pcblock-standard-standard .pccard-diams { background-color: #fff; color: #c00000; border-color: #c00000; }	.pcblock-standard-standard .pccard-hearts { background-color: #fff; color: #c00000; border-color: #c00000; }	.pcblock-standard-standard .pccard-spades { background-color: #fff; color: #000; border-color: #000; }
+.pcblock-English-poker-standard .pccard-clubs { background-color: #fff; color: #408000; border-color: #408000; }	.pcblock-English-poker-standard .pccard-diams { background-color: #fff; color: #2000ff; border-color: #2000ff; }	.pcblock-English-poker-standard .pccard-hearts { background-color: #fff; color: #c00000; border-color: #c00000; }	.pcblock-English-poker-standard .pccard-spades { background-color: #fff; color: #000; border-color: #000; }
+.pcblock-German-skat-standard .pccard-clubs { background-color: #fff; color: #000; border-color: #000; }	.pcblock-German-skat-standard .pccard-diams { background-color: #fff; color: #ff8000; border-color: #ff8000; }	.pcblock-German-skat-standard .pccard-hearts { background-color: #fff; color: #c00000; border-color: #c00000; }	.pcblock-German-skat-standard .pccard-spades { background-color: #fff; color: #408000; border-color: #408000; }
+.pcblock-English-bridge-standard .pccard-clubs { background-color: #fff; color: #2000ff; border-color: #2000ff; }	.pcblock-English-bridge-standard .pccard-diams { background-color: #fff; color: #ff8000; border-color: #ff8000; }	.pcblock-English-bridge-standard .pccard-hearts { background-color: #fff; color: #c00000; border-color: #c00000; }	.pcblock-English-bridge-standard .pccard-spades { background-color: #fff; color: #000; border-color: #000; }
+.pcblock-american-standard .pccard-clubs { background-color: #fff; color: #2000ff; border-color: #2000ff; }	.pcblock-american-standard .pccard-diams { background-color: #fff; color: #ffc000; border-color: #ffc000; }	.pcblock-american-standard .pccard-hearts { background-color: #fff; color: #c00000; border-color: #c00000; }	.pcblock-american-standard .pccard-spades { background-color: #fff; color: #000; border-color: #000; }
+.pcblock-4color-standard .pccard-clubs { background-color: #fff; color: #408000; border-color: #408000; }	.pcblock-4color-standard .pccard-diams { background-color: #fff; color: #ff8000; border-color: #ff8000; }	.pcblock-4color-standard .pccard-hearts { background-color: #fff; color: #c00000; border-color: #c00000; }	.pcblock-4color-standard .pccard-spades { background-color: #fff; color: #000; border-color: #000; }
+.pcblock-Seminolewars-bridge-standard .pccard-clubs { background-color: #fff; color: #408000; border-color: #408000; }	.pcblock-Seminolewars-bridge-standard .pccard-diams { background-color: #fff; color: #ffc000; border-color: #ffc000; }	.pcblock-Seminolewars-bridge-standard .pccard-hearts { background-color: #fff; color: #c00000; border-color: #c00000; }	.pcblock-Seminolewars-bridge-standard .pccard-spades { background-color: #fff; color: #2000ff; border-color: #2000ff; }
+.pcblock-standard-reverse .pccard-clubs { color: #fff; background-color: #000; border-color: #000; }	.pcblock-standard-reverse .pccard-diams { color: #fff; background-color: #c00000; border-color: #c00000; }	.pcblock-standard-reverse .pccard-hearts { color: #fff; background-color: #c00000; border-color: #c00000; }	.pcblock-standard-reverse .pccard-spades { color: #fff; background-color: #000; border-color: #000; }
+.pcblock-English-poker-reverse .pccard-clubs { color: #fff; background-color: #408000; border-color: #408000; }	.pcblock-English-poker-reverse .pccard-diams { color: #fff; background-color: #2000ff; border-color: #2000ff; }	.pcblock-English-poker-reverse .pccard-hearts { color: #fff; background-color: #c00000; border-color: #c00000; }	.pcblock-English-poker-reverse .pccard-spades { color: #fff; background-color: #000; border-color: #000; }
+.pcblock-German-skat-reverse .pccard-clubs { color: #fff; background-color: #000; border-color: #000; }	.pcblock-German-skat-reverse .pccard-diams { color: #fff; background-color: #ff8000; border-color: #ff8000; }	.pcblock-German-skat-reverse .pccard-hearts { color: #fff; background-color: #c00000; border-color: #c00000; }	.pcblock-German-skat-reverse .pccard-spades { color: #fff; background-color: #408000; border-color: #408000; }
+.pcblock-English-bridge-reverse .pccard-clubs { color: #fff; background-color: #2000ff; border-color: #2000ff; }	.pcblock-English-bridge-reverse .pccard-diams { color: #fff; background-color: #ff8000; border-color: #ff8000; }	.pcblock-English-bridge-reverse .pccard-hearts { color: #fff; background-color: #c00000; border-color: #c00000; }	.pcblock-English-bridge-reverse .pccard-spades { color: #fff; background-color: #000; border-color: #000; }
+.pcblock-american-reverse .pccard-clubs { color: #fff; background-color: #2000ff; border-color: #2000ff; }	.pcblock-american-reverse .pccard-diams { color: #fff; background-color: #ffc000; border-color: #ffc000; }	.pcblock-american-reverse .pccard-hearts { color: #fff; background-color: #c00000; border-color: #c00000; }	.pcblock-american-reverse .pccard-spades { color: #fff; background-color: #000; border-color: #000; }
+.pcblock-4color-reverse .pccard-clubs { color: #fff; background-color: #408000; border-color: #408000; }	.pcblock-4color-reverse .pccard-diams { color: #fff; background-color: #ff8000; border-color: #ff8000; }	.pcblock-4color-reverse .pccard-hearts { color: #fff; background-color: #c00000; border-color: #c00000; }	.pcblock-4color-reverse .pccard-spades { color: #fff; background-color: #000; border-color: #000; }
+.pcblock-Seminolewars-bridge-reverse .pccard-clubs { color: #fff; background-color: #408000; border-color: #408000; }	.pcblock-Seminolewars-bridge-reverse .pccard-diams { color: #fff; background-color: #ffc000; border-color: #ffc000; }	.pcblock-Seminolewars-bridge-reverse .pccard-hearts { color: #fff; background-color: #c00000; border-color: #c00000; }	.pcblock-Seminolewars-bridge-reverse .pccard-spades { color: #fff; background-color: #2000ff; border-color: #2000ff; }
+
+/* pcsuite */
+
+.pcsuite {
+	margin: 0 0.2em;
+	font-size: 1.1em;
+}
+
+/* pcrank */
+
+.pcrank {
+	margin-left: 0.2em;
+	font-weight: bold;
+}
+
+.pcrank-large {
+	font-weight: bold;
+	font-size: 2em;
+}

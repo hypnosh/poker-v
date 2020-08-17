@@ -1,0 +1,16 @@
+Table
+  State: button position
+  Felt
+    Flop
+    Turn
+    River
+    Pot
+      Side-pot
+  Player - generate on the fly as per props
+    Name
+    Hand - props (show/hide, card names)
+      Card
+    Stack
+    Bet
+    Position
+    Condition - (flags: playing, sitting)
