@@ -28,7 +28,22 @@
 .pccard-diams { background-color: #fff; color: #c00000; box-shadow: var(--box-shadow-measures) #c00000; }
 .pccard-hearts { background-color: #fff; color: #c00000; box-shadow: var(--box-shadow-measures) #c00000; }
 .pccard-spades { background-color: #fff; color: #000; box-shadow: var(--box-shadow-measures) #000; }
-
+.pccard-hide {
+	box-shadow: var(--box-shadow-measures) #000;
+	position: relative;
+}
+.pccard-hide:after {
+	content: '';
+	position: absolute;
+	top: var(--hidden-card-margin);
+	bottom: var(--hidden-card-margin);
+	left: var(--hidden-card-margin);
+	right: var(--hidden-card-margin);
+	border: 1px solid #000;
+	border-radius: 2px;
+	background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc4JyBoZWlnaHQ9JzgnPgogIDxyZWN0IHdpZHRoPSc4JyBoZWlnaHQ9JzgnIGZpbGw9JyNmZmYnLz4KICA8cGF0aCBkPSdNMCAwTDggOFpNOCAwTDAgOFonIHN0cm9rZS13aWR0aD0nMC41JyBzdHJva2U9JyNhYWEnLz4KPC9zdmc+Cg==");
+	background-repeat: repeat;
+}
 /* options */
 .pcblock-standard-standard .pccard-clubs { background-color: #fff; color: #000; border-color: #000; }	.pcblock-standard-standard .pccard-diams { background-color: #fff; color: #c00000; border-color: #c00000; }	.pcblock-standard-standard .pccard-hearts { background-color: #fff; color: #c00000; border-color: #c00000; }	.pcblock-standard-standard .pccard-spades { background-color: #fff; color: #000; border-color: #000; }
 .pcblock-English-poker-standard .pccard-clubs { background-color: #fff; color: #408000; border-color: #408000; }	.pcblock-English-poker-standard .pccard-diams { background-color: #fff; color: #2000ff; border-color: #2000ff; }	.pcblock-English-poker-standard .pccard-hearts { background-color: #fff; color: #c00000; border-color: #c00000; }	.pcblock-English-poker-standard .pccard-spades { background-color: #fff; color: #000; border-color: #000; }

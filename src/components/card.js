@@ -2,16 +2,9 @@ import React, { Component } from 'react';
 import './card.css';
 
 const Card = (props) => {
-  if (props.name == "hide") {
-    // other players' cards
-    const cardClasses = "card pccard pccard-back";
-    const cardDetails = (
-      <span className={cardClasses}>
-      </span>
-    );
-  } else {
-    let crd = (props.name ? props.name : "Ah");
-    // console.log(card);
+  if (props.type !== "hide") {
+    let crd = props.name;
+    console.log({card: crd, type: props.type});
     const suites = {
       h: ["hearts", "\u2665"],
       d: ["diams", "\u2666"],
@@ -21,14 +14,18 @@ const Card = (props) => {
     let cardRank = crd[0];
     let cardSuite = crd[1];
     const cardClasses = "card pccard pccard-" + suites[cardSuite][0];
-    const cardDetails = (
+    return(
       <span className={cardClasses}>
         <span className="pcrank">{cardRank}</span>
         <span className="pcsuite">{suites[cardSuite][1]}</span>
       </span>
     );
+  } else {
+    return(
+      <span className="card pccard pccard-hide"></span>
+    )
   }
-  return({cardDetails});
 }
+
 
 export default Card;
