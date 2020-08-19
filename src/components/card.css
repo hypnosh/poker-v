@@ -1,19 +1,18 @@
-.pcblock {
-	border: 1px dotted #ccc;
-	border-radius: 2px;
-	font-family: "arial narrow", arial, helvetica, sans-serif;
-	display: inline-block;
-	line-height: 1em;
-}
-.pccard {
+
+
+.card {
+  width: 30px;
+  height: 45px;
+  border-radius: 4px;
+  background: #fff;
 	display: inline-block;
 	padding: 0px 3px 2px 3px;
-	margin: 1px;
-	border-radius: 2px;
-	font-size: .7em;
+	margin: 3px;
+	margin-bottom: -5px;
+	font-size: .8em;
 	cursor: default;
-	border-width: 1px;
-	border-style: solid;
+	/* border-width: 2px; */
+	/* border-style: solid; */
 }
 
 .pcblock-font-Roboto_Condensed { font-family: "Roboto Condensed", "arial narrow", arial, helvetica, sans-serif; }
@@ -24,6 +23,13 @@
 .pcblock-font-Asap_Condensed { font-family: "Asap Condensed", "arial narrow", arial, helvetica, sans-serif; }
 .pcblock-font-IBM_Plex_Sans_Condensed { font-family: "IBM Plex Sans Condensed", "arial narrow", arial, helvetica, sans-serif; }
 
+/* default */
+.pccard-clubs { background-color: #fff; color: #000; box-shadow: var(--box-shadow-measures) #000; }
+.pccard-diams { background-color: #fff; color: #c00000; box-shadow: var(--box-shadow-measures) #c00000; }
+.pccard-hearts { background-color: #fff; color: #c00000; box-shadow: var(--box-shadow-measures) #c00000; }
+.pccard-spades { background-color: #fff; color: #000; box-shadow: var(--box-shadow-measures) #000; }
+
+/* options */
 .pcblock-standard-standard .pccard-clubs { background-color: #fff; color: #000; border-color: #000; }	.pcblock-standard-standard .pccard-diams { background-color: #fff; color: #c00000; border-color: #c00000; }	.pcblock-standard-standard .pccard-hearts { background-color: #fff; color: #c00000; border-color: #c00000; }	.pcblock-standard-standard .pccard-spades { background-color: #fff; color: #000; border-color: #000; }
 .pcblock-English-poker-standard .pccard-clubs { background-color: #fff; color: #408000; border-color: #408000; }	.pcblock-English-poker-standard .pccard-diams { background-color: #fff; color: #2000ff; border-color: #2000ff; }	.pcblock-English-poker-standard .pccard-hearts { background-color: #fff; color: #c00000; border-color: #c00000; }	.pcblock-English-poker-standard .pccard-spades { background-color: #fff; color: #000; border-color: #000; }
 .pcblock-German-skat-standard .pccard-clubs { background-color: #fff; color: #000; border-color: #000; }	.pcblock-German-skat-standard .pccard-diams { background-color: #fff; color: #ff8000; border-color: #ff8000; }	.pcblock-German-skat-standard .pccard-hearts { background-color: #fff; color: #c00000; border-color: #c00000; }	.pcblock-German-skat-standard .pccard-spades { background-color: #fff; color: #408000; border-color: #408000; }
