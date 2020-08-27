@@ -22,6 +22,9 @@ const Player = (props) => {
 			</div>
 			<div className="player-stack">{props.playerStack}</div>
 			<div className="player-bet">{props.playerBet}</div>
+      {props.handStrength !== undefined ?
+          <div className="hand-strength">{props.handStrength}, {props.potSplit}%</div>
+        : null }
 		</div>
   );
 }

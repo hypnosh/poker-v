@@ -4,7 +4,7 @@ import './card.css';
 const Card = (props) => {
   if (props.type !== "hide") {
     let crd = props.name;
-    console.log({card: crd, type: props.type});
+
     const suites = {
       h: ["hearts", "\u2665"],
       d: ["diams", "\u2666"],
@@ -13,16 +13,17 @@ const Card = (props) => {
     };
     let cardRank = crd[0];
     let cardSuite = crd[1];
-    const cardClasses = "card pccard pccard-" + suites[cardSuite][0];
+    const cardClasses = "card pccard-" + suites[cardSuite][0];
     return(
       <span className={cardClasses}>
         <span className="pcrank">{cardRank}</span>
         <span className="pcsuite">{suites[cardSuite][1]}</span>
+        <span className="pcsuite-large">{suites[cardSuite][1]}</span>
       </span>
     );
   } else {
     return(
-      <span className="card pccard pccard-hide"></span>
+      <span className="card pccard-hide"></span>
     )
   }
 }
