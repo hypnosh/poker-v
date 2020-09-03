@@ -1,11 +1,19 @@
 import React, { Component } from 'react';
+import {
+  Route,
+  BrowserRouter as Router,
+  Switch,
+  Redirect,
+} from "react-router-dom";
 import TableList from './components/tablelist';
 import Arena from './components/arena';
 import './components/main.css';
+import {app, auth, db} from './services/firebase';
 
 
 class App extends Component {
   state = {
+    user: auth().currentUser,
     screen: "tablelist",
   }
   loadTableList = () => {
@@ -25,6 +33,7 @@ class App extends Component {
       case "tablelist":
         AppScreen = (
           <TableList
+            user={this.state.user}
             loadArena={this.loadArena.bind(this)}
           />
         );

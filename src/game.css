@@ -12,6 +12,13 @@
 button:active {
   opacity: .7;
 }
+.goback {
+  font-size: 20pt;
+  color: #fff;
+  background: none;
+  border: none;
+}
+
 .table {
   position: absolute;
   width: 850px;
@@ -24,9 +31,10 @@ button:active {
   margin-top: -250px;
   background: var(--felt-color);
   box-shadow: 3px 3px 5px #555;
+  perspective: 400px;
   :before {
     content: '';
-    border: 1px solid #888;
+    border: 1px solid #555;
     position: absolute;
     width: 78%;
     height: 18%;
@@ -86,7 +94,47 @@ button:active {
   width: 200px;
   position: absolute;
   height: 100px;
+  /* transform: rotateX(5deg);; */
 }
+.player-sittingout, .player-folded {
+  opacity: .9;
+}
+.player-sittingout .player-name:after {
+  content: ' (sitting out)';
+  font-size: .8em;
+  font-style: italic;
+}
+.player-folded .player-name:after {
+  content: ' (folded)';
+  font-size: .8em;
+  font-style: italic;
+}
+.dealer {
+  position: absolute;
+  display: block;
+  font-size: 10pt;
+  width: 1em;
+  height: 1em;
+  line-height: 1em;
+  text-align: center;
+  border-radius: .7em;
+  background-color: var(--fold-color);
+  font-weight: bold;
+  border: 2px solid #222;
+  transform: rotateX(10deg);
+  z-index: 2;
+}
+/* .dealer:before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 1em;
+  height: 1em;
+  border-radius: .7em;
+  background-color: #444;
+  bottom: -3px;
+} */
+
 .player-1 { bottom: -50px; left: calc(50% + 50px); }
 .player-2 { bottom: -50px; right: calc(50% + 50px); }
 .player-3 { top: calc(50% - 48px); left: -100px; }
@@ -100,6 +148,14 @@ button:active {
 .player-4 .player-bet { bottom: -20px; right: 0; }
 .player-5 .player-bet { bottom: -20px; left: 0; }
 .player-6 .player-bet { top: 20px; left: -50px; }
+
+.dealer-1 { bottom: 20px; left: calc(50% + 50px); }
+.dealer-2 { bottom: 20px; right: calc(50% + 50px);  }
+.dealer-3 { top: 59%; left: 120px; }
+.dealer-4 { top: 45px; right: calc(50% + 20px); }
+.dealer-5 { top: 55px; right: 140px; }
+.dealer-6 { top: 59%; right: 120px; }
+
 /* .player:not(.me) * {
   display: none;
 } */
@@ -120,6 +176,10 @@ button:active {
   width: 200px;
   text-align: center;
   color: #fff;
+}
+.pot:before {
+  content: 'Pot';
+  display: block;
 }
 .buttons {
   position: absolute;
@@ -164,11 +224,4 @@ button:active {
 .action-raise {
   background-color: var(--raise-color);
   color: #fff;
-}
-
-.goback {
-  font-size: 20pt;
-  color: #fff;
-  background: none;
-  border: none;
 }
