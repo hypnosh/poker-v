@@ -1,13 +1,16 @@
 import React, { Component } from 'react';
 import Player from './player';
 import Card from './card';
+import {app, auth, db} from '../services/firebase';
+
 
 class Table extends Component {
   state = {
       tableID: this.props.id,
-      playerID: 1,
-      blinds: [5, 10],
-      button: 4,
+      playerID: this.props.user,
+      handID: 0,
+      blinds: [],
+      button: 1,
       callButtonText: "Check",
       street: "turn",
       pot: 50000,
@@ -24,6 +27,15 @@ class Table extends Component {
       turn: "Jd",
       river: "Td",
       raiseFlag: false,
+  }
+  async componentDidMount() {
+    // get table details - ID from props
+    // get hand details - ID from table record - listen
+    // get bids - listen 
+    await db.collection("tables").doc(this.state.tableID)
+      .get()
+      .then()
+      .catch((error) => console.log("Error in getting table ", error));
   }
 
   callSize = () => {

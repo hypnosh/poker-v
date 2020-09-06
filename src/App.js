@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {
   Route,
-  BrowserRouter as Router,
+  BrowserRouter,
   Switch,
   Redirect,
 } from "react-router-dom";
@@ -28,6 +28,7 @@ class App extends Component {
 
   }
   render() {
+
     let AppScreen;
     switch(this.state.screen) {
       case "tablelist":
@@ -42,13 +43,20 @@ class App extends Component {
         AppScreen = (
           <Arena
             goback={this.loadTableList}
-            id={this.state.tableID}
+            tableID={this.state.tableID}
+            user={this.state.user}
             />
         );
       break;
 
     }
-    return (<div>{AppScreen}</div>);
+    return (
+      <BrowserRouter>
+        <Route exact path="/" component={TableList} />
+        <Route path="/table" component={Arena} />
+        {/* AppScreen */}
+      </BrowserRouter>
+    );
   }
 }
 

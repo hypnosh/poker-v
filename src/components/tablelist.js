@@ -19,7 +19,7 @@ class TableList extends Component {
   async componentDidMount() {
       // console.log(this.props.user);
     let tables = [];
-    await db.collection("tables").where("players", "array-contains", "a")
+    await db.collection("tables").where("players", "array-contains", this.state.email)
       .get()
       .then((querySnapshot) => {
         querySnapshot.forEach( (doc) => {
@@ -35,9 +35,9 @@ class TableList extends Component {
           };
           tables.push(table);
         });
+      this.setState({ tables: tables });
       })
       .catch((error) => console.log("Error in getting docs ", error));
-    this.setState({ tables: tables });
   }
   createTableAction = () => {
     this.setState({formDisplay: true});
