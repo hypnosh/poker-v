@@ -1,41 +1,60 @@
 import React, { Component } from 'react';
 import Player from './player';
 import Card from './card';
-import {app, auth, db} from '../services/firebase';
+import { app, auth, db } from '../services/firebase';
 
 
 class Table extends Component {
   state = {
-      tableID: this.props.id,
-      playerID: this.props.user,
-      handID: 0,
-      blinds: [],
-      button: 1,
-      callButtonText: "Check",
-      street: "turn",
-      pot: 50000,
-      players: [
-        { idx: 1, name: "Amit", stack: 8000, bet: 80, status: "playing", hand: "AhKc", handStrength: "Straight A-T", potSplit: 100 },
-        { idx: 2, name: "Pratik", stack: 8000, bet: 90, status: "playing" },
-        { idx: 3, name: "Saumitra", stack: 8000, bet: 70, status: "sittingout" },
-        { idx: 4, name: "Saurabh", stack: 8000, bet: 100, status: "playing" },
-        { idx: 5, name: "Premi", stack: 8000, bet: 120, status: "folded" },
-        { idx: 6, name: "Manish", stack: 8000, bet: 60, status: "playing" }
-      ],
-      playerAction: 1,
-      flop: ["3h", "7s", "Qc"],
-      turn: "Jd",
-      river: "Td",
-      raiseFlag: false,
+    authenticated: false,
+    tableID: this.props.id,
+    playerID: 0, /* this.props.user */
+    handID: 0,
+    blinds: [],
+    button: 1,
+    callButtonText: "Check",
+    street: "turn",
+    pot: 50000,
+    players: [
+      { idx: 1, name: "Amit", stack: 8000, bet: 80, status: "playing", hand: "AhKc", handStrength: "Straight A-T", potSplit: 100 },
+      { idx: 2, name: "Pratik", stack: 8000, bet: 90, status: "playing" },
+      { idx: 3, name: "Saumitra", stack: 8000, bet: 70, status: "sittingout" },
+      { idx: 4, name: "Saurabh", stack: 8000, bet: 100, status: "playing" },
+      { idx: 5, name: "Premi", stack: 8000, bet: 120, status: "folded" },
+      { idx: 6, name: "Manish", stack: 8000, bet: 60, status: "playing" }
+    ],
+    playerAction: 1,
+    flop: ["3h", "7s", "Qc"],
+    turn: "Jd",
+    river: "Td",
+    raiseFlag: false,
   }
   async componentDidMount() {
+    // get user's details
+    auth().onAuthStateChanged((user) => {
+      if (user) {
+        this.setState({
+          authenticated: true,
+          user: user.providerData[0]
+        });
+      } else {
+        this.setState({
+          authenticated: false
+        });
+        this.props.history.replace('/login');
+      }
+    });
     // get table details - ID from props
     // get hand details - ID from table record - listen
-    // get bids - listen 
+    // get bids - listen
+    console.log(this.state.tableID);
     await db.collection("tables").doc(this.state.tableID)
       .get()
-      .then()
-      .catch((error) => console.log("Error in getting table ", error));
+      .then(querySnapshot => {
+        let tableData = querySnapshot.data();
+
+      })
+      .catch(error => console.log("Error in getting table ", error));
   }
 
   callSize = () => {
@@ -137,9 +156,12 @@ class Table extends Component {
         </div>
         {((this.state.playerID == this.state.playerAction) && (me.status !== "folded")) ?
           <div className="buttons">
-            <button onClick={this.foldAction} className="btn action-button action-fold">Fold</button>
-            <button onClick={this.callAction} className="btn action-button action-call">{callButtonText}</button>
-            <button onClick={this.raiseAction} className="btn action-button action-raise">Raise {this.state.myBet}</button>
+            <button onClick={this.foldAction}
+              className="btn action-button action-fold">Fold</button>
+            <button onClick={this.callAction}
+              className="btn action-button action-call">{callButtonText}</button>
+            <button onClick={this.raiseAction}
+              className="btn action-button action-raise">Raise {this.state.myBet}</button>
             {(this.state.raiseFlag) ?
               <span className="raising-slider">
                 <input

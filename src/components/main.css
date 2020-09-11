@@ -12,6 +12,11 @@
   --border-radius: 4px;
 }
 
+@keyframes loading-pulse {
+  0% {
+    
+  }
+}
 input, button, select {
   border: none;
   /* border-width: 1px 3px 3px 1px;
@@ -50,6 +55,9 @@ select {
 .btn-main {
   background-color: var(--main-btn-color);
   font-weight: bold;
+}
+.btn-secondary {
+  background-color: var(--aux-color);
 }
 .closebtn {
   position: absolute;

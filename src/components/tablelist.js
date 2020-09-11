@@ -1,9 +1,13 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import {app, auth, db} from '../services/firebase';
 
 class TableList extends Component {
   state = {
-    email: "amitksharma@gmail.com",
+    loading: true,
+    user: {
+      email: "a"
+    },
     tables: [
 
     ],
@@ -17,12 +21,24 @@ class TableList extends Component {
   }
 
   async componentDidMount() {
-      // console.log(this.props.user);
+    auth().onAuthStateChanged((user) => {
+      if (user) {
+        this.setState({
+          authenticated: true,
+          user: user.providerData[0],
+          loading: false
+        });
+      } else {
+        this.setState({
+          authenticated: false
+        });
+      }
+    });
     let tables = [];
-    await db.collection("tables").where("players", "array-contains", this.state.email)
+    await db.collection("tables").where("players", "array-contains", this.state.user.email)
       .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach( (doc) => {
+      .then(querySnapshot => {
+        querySnapshot.forEach(doc => {
           let blinds = doc.data().blinds;
           let blindsArr = blinds.split("/");
           let initStack = blindsArr[1] * 100;
@@ -35,9 +51,9 @@ class TableList extends Component {
           };
           tables.push(table);
         });
-      this.setState({ tables: tables });
+        this.setState({ tables: tables });
       })
-      .catch((error) => console.log("Error in getting docs ", error));
+      .catch(error => console.log("Error in getting docs ", error));
   }
   createTableAction = () => {
     this.setState({formDisplay: true});
@@ -51,7 +67,7 @@ class TableList extends Component {
       event.target.pnl.value
     ];
     const players = [
-      "amitksharma@gmail.com",
+      this.state.user.email,
       event.target.player2.value,
       event.target.player3.value,
       event.target.player4.value,
@@ -88,7 +104,7 @@ class TableList extends Component {
     document.title = "Poker Experiments";
     return (
       <div className="table-list-container">
-        <h2 className={this.state.formDisplay ? " fade" : null }>Your Tables</h2>
+        <h2 className={this.state.formDisplay ? " fade" : null }>{this.state.user.displayName}'s Tables</h2>
         <button className={`btn btn-main ${this.state.formDisplay ? " fade" : null }`} onClick={this.createTableAction}>Create Table</button>
 
         <ul className={`table-list ${this.state.formDisplay ? " fade" : null }`}>
@@ -126,12 +142,12 @@ const TableListItem = (props) => {
   /* id, title, seatsnumber, blinds, stack */
   const itemClass = "table-list-" + props.type;
   return(
-    <li className={itemClass} key={props.id} id={props.id} onClick={() => props.openTable(props.id) }>
+    <Link to={props.id ? '/table/' + props.id : '/table/'} className={itemClass} key={props.id}>
       <span className="table-name">{props.tableName}</span>
       <span className="table-players">{props.tablePlayers}</span>
       <span className="table-blinds">{props.tableBlinds}</span>
       <span className="table-stack">{props.tableStack}</span>
-    </li>
+    </Link>
   );
 }
 

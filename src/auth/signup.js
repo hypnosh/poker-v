@@ -13,7 +13,7 @@ class Signup extends Component {
       [event.target.name]: event.target.value
     });
   }
-  async handleSubmit = (event) => {
+  async handleSubmit(event) {
     event.preventDefault();
     this.setState({ error: '' });
     try {
@@ -22,23 +22,27 @@ class Signup extends Component {
       this.setState({ error: error.message });
     }
   }
-  return(
-    <form onSubmit={this.handleSubmit}>
-      <h3>Sign up</h3>
-      <input placeholder="Email" name="email" type="email"
-        onChange={this.handleChange}
-        value={this.state.email}
-      /><br/>
-      <input placeholder="Password" name="password" type="password"
-        onChange={this.handleChange}
-        value={this.state.password}
-      /><br/>
-      <p className="error">
-        {this.state.error ? this.state.error: null}
-      </p>
-      <button type="submit" className="btn btn-main">Sign Up</button>
-      <hr/>
-      <p>Already have an account? <Link to="/login">Login</Link></p>
-    </form>
-  );
+  render() {
+    return(
+      <form onSubmit={this.handleSubmit}>
+        <h3>Sign up</h3>
+        <input placeholder="Email" name="email" type="email"
+          onChange={this.handleChange}
+          value={this.state.email}
+        /><br/>
+        <input placeholder="Password" name="password" type="password"
+          onChange={this.handleChange}
+          value={this.state.password}
+        /><br/>
+        <p className="error">
+          {this.state.error ? this.state.error: null}
+        </p>
+        <button type="submit" className="btn btn-main">Sign Up</button>
+        <hr/>
+        <p>Already have an account? <Link to="/login">Login</Link></p>
+      </form>
+    );
+  }
 }
+
+export default Signup;

@@ -13,7 +13,7 @@ class Login extends Component {
       [event.target.name]: event.target.value
     });
   }
-  async handleSubmit = (event) => {
+  async handleSubmit(event) {
     event.preventDefault();
     this.setState({ error: '' });
     try {
@@ -29,27 +29,37 @@ class Login extends Component {
       this.setState({ error: error.message });
     }
   }
-  return(
-    <form autoComplete="off" onSubmit={this.handleSubmit}>
-      <h3>Login</h3>
-      <input placeholder="Email" name="email" type="email"
-        onChange={this.handleChange}
-        value={this.state.email}
-      /><br/>
-      <input placeholder="Password" name="password" type="password"
-        onChange={this.handleChange}
-        value={this.state.password}
-      /><br/>
-      <p className="error">
-        {this.state.error ? this.state.error: null}
-      </p>
-      <button type="submit" className="btn btn-main">Login</button>
-      <p>Or</p>
-      <button onClick={this.googleSignIn} type="button">
-        Sign up with Google
-      </button>
-      <hr/>
-      <p>Do not have an account? <Link to="/signup">Sign Up</Link></p>"
-    </form>
-  );
+  render() {
+    return(
+      <form autoComplete="off" onSubmit={this.handleSubmit}>
+        <h3>Login</h3>
+        <input placeholder="Email" name="email" type="email"
+          onChange={this.handleChange}
+          value={this.state.email}
+        />
+        <br/>
+        <input placeholder="Password" name="password" type="password"
+          onChange={this.handleChange}
+          value={this.state.password}
+        />
+        <br/>
+        <p className="error">
+          {this.state.error ? this.state.error: null}
+        </p>
+        <button
+          type="submit"
+          className="btn btn-main">Login</button> or <button
+          onClick={this.googleSignIn}
+          type="button"
+          className="btn btn-secondary">
+          Sign in with Google
+        </button>
+        <hr/>
+        <p>Do not have an account? <Link
+          className="btn" to="/signup">Sign Up</Link></p>
+      </form>
+    );
+  }
 }
+
+export default Login;
