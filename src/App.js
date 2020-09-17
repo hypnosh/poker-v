@@ -11,7 +11,7 @@ import Login from './auth/login';
 
 import TableList from './components/tablelist';
 import Arena from './components/arena';
-import './components/main.css';
+import './styles/main.css';
 import {app, auth, db} from './services/firebase';
 
 
@@ -71,7 +71,6 @@ class App extends Component {
     return (
       <BrowserRouter>
         <Switch>
-          <Route exact path="/" component={TableList} />
           <PrivateRoute exact path="/" component={TableList} authenticated={this.state.authenticated} />
           <PrivateRoute path="/table/:id" component={Arena} authenticated={this.state.authenticated} />
           <PublicRoute path="/signup" component={Signup} authenticated={this.state.authenticated} />

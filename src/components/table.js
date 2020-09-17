@@ -1,27 +1,47 @@
 import React, { Component } from 'react';
 import Player from './player';
 import Card from './card';
-import { app, auth, db } from '../services/firebase';
-
+import { app, auth, db, svrfunctions as fbfn } from '../services/firebase';
+import '../styles/game.css';
+const sitIn = fbfn.httpsCallable('SitIn');
 
 class Table extends Component {
   state = {
     authenticated: false,
     tableID: this.props.id,
-    playerID: 0, /* this.props.user */
+    playerID: 1, /* this.props.user */
     handID: 0,
     blinds: [],
-    button: 1,
+    button: 5,
     callButtonText: "Check",
     street: "turn",
     pot: 50000,
     players: [
-      { idx: 1, name: "Amit", stack: 8000, bet: 80, status: "playing", hand: "AhKc", handStrength: "Straight A-T", potSplit: 100 },
-      { idx: 2, name: "Pratik", stack: 8000, bet: 90, status: "playing" },
-      { idx: 3, name: "Saumitra", stack: 8000, bet: 70, status: "sittingout" },
-      { idx: 4, name: "Saurabh", stack: 8000, bet: 100, status: "playing" },
-      { idx: 5, name: "Premi", stack: 8000, bet: 120, status: "folded" },
-      { idx: 6, name: "Manish", stack: 8000, bet: 60, status: "playing" }
+      {
+        idx: 1, name: "Amit", email: "amitksharma@gmail.com", stack: 8000, bet: 80,
+        position: 1,
+        hand: "AhKc", handStrength: "Straight A-T", potSplit: 100
+      },
+      {
+        idx: 2, name: "Pratik", email: "pratad@gmail.com", stack: 8000, bet: 90,
+        position: 2,
+      },
+      {
+        idx: 3, name: "Saumitra", stack: 8000, bet: 70, status: "sittingout",
+        position: 5,
+      },
+      {
+        idx: 4, name: "Saurabh", stack: 8000, bet: 100, status: "playing",
+        position: 4,
+      },
+      {
+        idx: 5, name: "Premi", stack: 8000, bet: 120, status: "folded",
+        position: 3,
+      },
+      {
+        idx: 6, name: "Manish", stack: 8000, bet: 60, status: "playing",
+        position: 6,
+      }
     ],
     playerAction: 1,
     flop: ["3h", "7s", "Qc"],
@@ -47,7 +67,7 @@ class Table extends Component {
     // get table details - ID from props
     // get hand details - ID from table record - listen
     // get bids - listen
-    console.log(this.state.tableID);
+    // console.log(this.state.tableID);
     await db.collection("tables").doc(this.state.tableID)
       .get()
       .then(querySnapshot => {
@@ -55,6 +75,24 @@ class Table extends Component {
 
       })
       .catch(error => console.log("Error in getting table ", error));
+  }
+
+  takeSeat = (event) => {
+    const position = event.target.dataset.position;
+    sitIn({
+      tableID: this.state.tableID,
+      email: this.state.user.email,
+      position: position
+    })
+      .then(result => {
+        console.log("SitIn -----");
+        console.log(result);
+        console.log(result.data);
+      })
+      .catch(error => {
+        console.log("SitIn error ----");
+        console.log(error);
+      });
   }
 
   callSize = () => {
@@ -133,18 +171,36 @@ class Table extends Component {
         <div className="players">
           {this.state.players.map((player, index) => {
             const playerHand = (player.hand) ? player.hand : "hide";
-            return(
-              <Player
-                key={player.idx}
-                playerNo={player.idx}
-                playerName={player.name}
-                playerStack={player.stack}
-                playerBet={player.bet}
-                playerHand={playerHand}
-                handStrength={player.handStrength}
-                potSplit={player.potSplit}
-                status={player.status}
-              />);
+            if (player.position && player.status) {
+              return(
+                <Player
+                  key={player.idx}
+                  playerNo={player.idx}
+                  playerName={player.name}
+                  playerStack={player.stack}
+                  playerBet={player.bet}
+                  playerHand={playerHand}
+                  seat={player.position}
+                  handStrength={player.handStrength}
+                  potSplit={player.potSplit}
+                  status={player.status}
+                />);
+            } else {
+              if (!me.status) {
+                return (
+                  <div
+                    key={player.idx}
+                    className={`sit-here-button player-` + player.position}
+                    >
+                    <button
+                      onClick={this.takeSeat}
+                      data-position={player.position}>
+                      Sit here
+                    </button>
+                  </div>
+                );
+              }
+            }
             })}
         </div>
         <span className={`dealer dealer-${this.state.button}`}>D</span>
@@ -154,7 +210,7 @@ class Table extends Component {
         <div className="pot">
           {this.state.pot}
         </div>
-        {((this.state.playerID == this.state.playerAction) && (me.status !== "folded")) ?
+        {((this.state.playerID == this.state.playerAction)) ?
           <div className="buttons">
             <button onClick={this.foldAction}
               className="btn action-button action-fold">Fold</button>

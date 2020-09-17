@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './card.css';
+import '../styles/card.css';
 
 const Card = (props) => {
   if (props.type !== "hide") {

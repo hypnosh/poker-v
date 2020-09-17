@@ -89,12 +89,20 @@ button:active {
   font-style: italic;
 }
 .player {
+  position: absolute;
   padding: 4px;
   /* border: 1px solid #ddd; */
   width: 200px;
-  position: absolute;
   height: 100px;
   /* transform: rotateX(5deg);; */
+}
+.sit-here-button {
+  position: absolute;
+  width: 200px;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .player-sittingout, .player-folded {
   opacity: .9;

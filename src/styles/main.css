@@ -14,8 +14,12 @@
 
 @keyframes loading-pulse {
   0% {
-    
+
   }
+}
+a {
+  color: inherit;
+  text-decoration: inherit;
 }
 input, button, select {
   border: none;
@@ -30,7 +34,7 @@ input, button, select {
   box-sizing: border-box;
   /* box-shadow: var(--box-shadow-measures) #aaa; */
 }
-input[type=text] {
+input[type=text], input[type=email], input[type=password] {
   border: none;
   border: 1px solid var(--aux-color);
   padding: 6px;
@@ -79,6 +83,12 @@ select {
 .fullw {
   width: 100%;
 }
+.appname {
+  font-weight: ligher;
+  font-size: 10pt;
+  color: #777;
+  text-align: left;
+}
 .table-list-container {
   max-width: 800px;
   margin: 20px auto;
@@ -108,6 +118,7 @@ select {
   display: flex;
   flex-wrap: nowrap;
   justify-content: space-between;
+  cursor: default;
 }
 .table-name {
   width: 55%;
@@ -126,7 +137,6 @@ select {
   text-align: right;
 }
 
-
 .form-create-table {
   background: #fff;
   position: absolute;
@@ -143,4 +153,9 @@ select {
 .playerToInvite {
   width: 48%;
   float: left;
+}
+
+.auth-forms {
+  width: 400px;
+  margin: auto;
 }

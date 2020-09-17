@@ -6,7 +6,7 @@ class TableList extends Component {
   state = {
     loading: true,
     user: {
-      email: "a"
+      email: "amitksharma@gmail.com"
     },
     tables: [
 
@@ -18,6 +18,73 @@ class TableList extends Component {
       players: [],
       pnl: "n"
     }
+  }
+  logout = () => {
+    auth().signOut()
+      .then(() => {
+        // success
+      })
+      .catch((error) => {
+        // error
+        console.log("Sign out error", error);
+      });
+  }
+
+  createTableAction = () => {
+    this.setState({formDisplay: true});
+  }
+  createTable = (event) => {
+    // take inputs from the form and send to server to create a new table
+    event.preventDefault();
+    const [tableName, blinds, pnl] = [
+      event.target.tableName.value,
+      event.target.blinds.value,
+      event.target.pnl.value
+    ];
+    const startingStack = event.target.blinds.value.split("/")[1] * 100;
+    const players = [
+      { email: this.state.user.email, stack: startingStack },
+      { email: event.target.player2.value, stack: startingStack },
+      { email: event.target.player3.value, stack: startingStack },
+      { email: event.target.player4.value, stack: startingStack },
+      { email: event.target.player5.value, stack: startingStack },
+      { email: event.target.player6.value, stack: startingStack },
+    ];
+    const playerEmails = [
+      this.state.user.email,
+      event.target.player2.value,
+      event.target.player3.value,
+      event.target.player4.value,
+      event.target.player5.value,
+      event.target.player6.value,
+    ];
+    console.log({tableName, blinds, players, pnl});
+
+    // create table in firestore
+    db.collection("tables").add({
+      tableName: tableName,
+      blinds: blinds,
+      players: players,
+      playerEmails: playerEmails,
+      pnl: pnl
+    })
+    .then((docRef) => {
+      console.log("Table created", docRef);
+      alert("Table created");
+      this.setState({ formDisplay: false });
+    })
+    .catch((error) => {
+      console.log("Table creation error", error);
+    });
+  }
+
+  openTable = (id) => {
+    // open the table which is clicked
+    this.props.loadArena(id);
+  }
+
+  closeForm = () => {
+    this.setState({formDisplay: false});
   }
 
   async componentDidMount() {
@@ -35,7 +102,8 @@ class TableList extends Component {
       }
     });
     let tables = [];
-    await db.collection("tables").where("players", "array-contains", this.state.user.email)
+    await db.collection("tables")
+      .where("playerEmails", "array-contains", this.state.user.email)
       .get()
       .then(querySnapshot => {
         querySnapshot.forEach(doc => {
@@ -55,59 +123,18 @@ class TableList extends Component {
       })
       .catch(error => console.log("Error in getting docs ", error));
   }
-  createTableAction = () => {
-    this.setState({formDisplay: true});
-  }
-  createTable = (event) => {
-    // take inputs from the form and send to server to create a new table
-    event.preventDefault();
-    const [tableName, blinds, pnl] = [
-      event.target.tableName.value,
-      event.target.blinds.value,
-      event.target.pnl.value
-    ];
-    const players = [
-      this.state.user.email,
-      event.target.player2.value,
-      event.target.player3.value,
-      event.target.player4.value,
-      event.target.player5.value,
-      event.target.player6.value,
-    ];
-    console.log({tableName, blinds, players, pnl});
 
-    // create table in firestore
-    db.collection("tables").add({
-      tableName: tableName,
-      blinds: blinds,
-      players: players,
-      pnl: pnl
-    })
-    .then((docRef) => {
-      console.log("Table created", docRef);
-    })
-    .catch((error) => {
-      console.log("Table creation error", error);
-    });
-  }
-
-  openTable = (id) => {
-    // open the table which is clicked
-    this.props.loadArena(id);
-  }
-
-  closeForm = () => {
-    this.setState({formDisplay: false});
-  }
 
   render() {
     document.title = "Poker Experiments";
     return (
       <div className="table-list-container">
+        <h1 className="appname">Poker with Friends</h1>
         <h2 className={this.state.formDisplay ? " fade" : null }>{this.state.user.displayName}'s Tables</h2>
         <button className={`btn btn-main ${this.state.formDisplay ? " fade" : null }`} onClick={this.createTableAction}>Create Table</button>
+        <button className="btn btn-sub" onClick={this.logout}>Logout</button>
 
-        <ul className={`table-list ${this.state.formDisplay ? " fade" : null }`}>
+        <div className={`table-list ${this.state.formDisplay ? " fade" : null }`}>
           <TableListItem
             type="header"
             tableName="Table"
@@ -116,7 +143,6 @@ class TableList extends Component {
             tableStack="Starting Stack"
             />
           {this.state.tables.map((table, index) => {
-
             return (<TableListItem
               type="item"
               key={table.id}
@@ -128,7 +154,7 @@ class TableList extends Component {
               openTable={this.openTable}
               />);
           })}
-        </ul>
+        </div>
         {(this.state.formDisplay) ? <CreateTableForm
           closeForm={this.closeForm}
           createTable={this.createTable}
@@ -142,7 +168,7 @@ const TableListItem = (props) => {
   /* id, title, seatsnumber, blinds, stack */
   const itemClass = "table-list-" + props.type;
   return(
-    <Link to={props.id ? '/table/' + props.id : '/table/'} className={itemClass} key={props.id}>
+    <Link to={props.id ? '/table/' + props.id : ''} className={itemClass} key={props.id}>
       <span className="table-name">{props.tableName}</span>
       <span className="table-players">{props.tablePlayers}</span>
       <span className="table-blinds">{props.tableBlinds}</span>
@@ -192,7 +218,7 @@ const CreateTableForm = (props) => {
       <br clear="all" />
       <label className="label">Do you need a P&L account at the end of the game?</label><br/>
         <label className="label-radio"><input type="radio" name="pnl" value="Yes" /> Yes</label>
-        <label className="label-radio"><input type="radio" name="pnl" value="No" /> No</label>
+        <label className="label-radio"><input type="radio" name="pnl" checked value="No" /> No</label>
       <br/><br/>
       <button type="submit" className="btn btn-main">Create Table</button>
     </form>

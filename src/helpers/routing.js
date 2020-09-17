@@ -17,7 +17,6 @@ const PrivateRoute = ({ component: Component, authenticated, ...rest }) => {
   )
 }
 
-
 const PublicRoute = ({ component: Component, authenticated, ...rest }) => {
   return (
     <Route

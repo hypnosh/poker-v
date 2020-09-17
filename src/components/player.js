@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Card from './card';
 
 const Player = (props) => {
-  const playerClass = "player player-" + props.playerNo + " player-" + props.status;
+  const playerClass = "player player-" + props.seat + " player-" + props.status;
   let cardType = "";
   let playerCard1 = "", playerCard2 = "";
   if (props.playerHand === "hide") {
@@ -33,4 +33,9 @@ const Player = (props) => {
   );
 }
 
+const EmptySeat = (props) => {
+  return (
+    <p>Come sit here</p>
+  );
+}
 export default Player;
