@@ -18,7 +18,7 @@ import {app, auth, db} from './services/firebase';
 class App extends Component {
   state = {
     user: {},
-    authenticated: false,
+    authenticated: true,
     screen: "tablelist",
   }
   loadTableList = () => {

@@ -9,7 +9,7 @@ class Table extends Component {
   state = {
     authenticated: false,
     tableID: this.props.id,
-    playerID: 1, /* this.props.user */
+    playerID: 2, /* this.props.user */
     handID: 0,
     blinds: [],
     button: 5,
@@ -19,28 +19,31 @@ class Table extends Component {
     players: [
       {
         idx: 1, name: "Amit", email: "amitksharma@gmail.com", stack: 8000, bet: 80,
-        position: 1,
+        position: 1, status: "playing",
         hand: "AhKc", handStrength: "Straight A-T", potSplit: 100
       },
       {
         idx: 2, name: "Pratik", email: "pratad@gmail.com", stack: 8000, bet: 90,
-        position: 2,
+        position: 3, status: "playing"
       },
       {
-        idx: 3, name: "Saumitra", stack: 8000, bet: 70, status: "sittingout",
-        position: 5,
+        idx: 3, name: "Saumitra", stack: 8000, bet: 70,
+        status: "sittingout",
+
       },
       {
-        idx: 4, name: "Saurabh", stack: 8000, bet: 100, status: "playing",
-        position: 4,
+        idx: 4, name: "Saurabh", stack: 8000, bet: 100,
+        status: "playing",
+
       },
       {
-        idx: 5, name: "Premi", stack: 8000, bet: 120, status: "folded",
-        position: 3,
+        idx: 5, name: "Premi", stack: 8000, bet: 120,
+
+
       },
       {
-        idx: 6, name: "Manish", stack: 8000, bet: 60, status: "playing",
-        position: 6,
+        idx: 6, name: "Manish", stack: 8000, bet: 60,
+
       }
     ],
     playerAction: 1,
@@ -72,7 +75,7 @@ class Table extends Component {
       .get()
       .then(querySnapshot => {
         let tableData = querySnapshot.data();
-
+        console.log(tableData);
       })
       .catch(error => console.log("Error in getting table ", error));
   }
@@ -172,6 +175,13 @@ class Table extends Component {
           {this.state.players.map((player, index) => {
             const playerHand = (player.hand) ? player.hand : "hide";
             if (player.position && player.status) {
+              let thisPosition = player.position;
+              if (me.position) {
+                thisPosition = player.position - me.position + 1;
+                thisPosition = (thisPosition < 1) ? thisPosition + 6 : thisPosition;
+                console.log({player: player.name, thisPosition: thisPosition, playerPosition: player.position, mePosition: me.position});
+                console.log("ss");
+              }
               return(
                 <Player
                   key={player.idx}
@@ -180,21 +190,21 @@ class Table extends Component {
                   playerStack={player.stack}
                   playerBet={player.bet}
                   playerHand={playerHand}
-                  seat={player.position}
+                  seat={thisPosition}
                   handStrength={player.handStrength}
                   potSplit={player.potSplit}
                   status={player.status}
                 />);
             } else {
-              if (!me.status) {
+              if (!me.position) {
                 return (
                   <div
                     key={player.idx}
-                    className={`sit-here-button player-` + player.position}
+                    className={`sit-here-button player-` + player.idx}
                     >
                     <button
                       onClick={this.takeSeat}
-                      data-position={player.position}>
+                      data-position={player.idx}>
                       Sit here
                     </button>
                   </div>

@@ -143,19 +143,19 @@ button:active {
   bottom: -3px;
 } */
 
-.player-1 { bottom: -50px; left: calc(50% + 50px); }
-.player-2 { bottom: -50px; right: calc(50% + 50px); }
-.player-3 { top: calc(50% - 48px); left: -100px; }
-.player-4 { top: -50px; right: calc(50% + 50px); }
-.player-5 { top: -50px; left: calc(50% + 50px); }
-.player-6 { top: calc(50% - 48px); right: -100px; }
+.playerseat-1 { bottom: -50px; left: calc(50% + 50px); }
+.playerseat-2 { bottom: -50px; right: calc(50% + 50px); }
+.playerseat-3 { top: calc(50% - 48px); left: -100px; }
+.playerseat-4 { top: -50px; right: calc(50% + 50px); }
+.playerseat-5 { top: -50px; left: calc(50% + 50px); }
+.playerseat-6 { top: calc(50% - 48px); right: -100px; }
 
-.player-1 .player-bet { top: -20px; left: 0; }
-.player-2 .player-bet { top: -20px; right: 10px; }
-.player-3 .player-bet { top: 20px; right: -50px; }
-.player-4 .player-bet { bottom: -20px; right: 0; }
-.player-5 .player-bet { bottom: -20px; left: 0; }
-.player-6 .player-bet { top: 20px; left: -50px; }
+.playerseat-1 .player-bet { top: -20px; left: 0; }
+.playerseat-2 .player-bet { top: -20px; right: 10px; }
+.playerseat-3 .player-bet { top: 20px; right: -50px; }
+.playerseat-4 .player-bet { bottom: -20px; right: 0; }
+.playerseat-5 .player-bet { bottom: -20px; left: 0; }
+.playerseat-6 .player-bet { top: 20px; left: -50px; }
 
 .dealer-1 { bottom: 20px; left: calc(50% + 50px); }
 .dealer-2 { bottom: 20px; right: calc(50% + 50px);  }
