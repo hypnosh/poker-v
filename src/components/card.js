@@ -11,8 +11,9 @@ const Card = (props) => {
       c: ["clubs", "\u2663"],
       s: ["spades", "\u2660"]
     };
-    let cardRank = crd[0];
-    let cardSuite = crd[1];
+    const [cardRank, cardSuite] = crd;
+    // let cardRank = crd[0];
+    // let cardSuite = crd[1];
     const cardClasses = "card pccard-" + suites[cardSuite][0];
     return(
       <span className={cardClasses}>

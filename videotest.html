@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Let's do video baby!</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+	<link rel="icon" href="./favicon.ico" type="image/x-icon">
+	<script type="text/javascript" src="./peerjs.min.js"></script>
+	<style>
+		* {
+			font-family: "Open Sans";
+		}
+		#myID.connected:before {
+			content: 'Your ID: ';
+		}
+		#container {
+			display: flex;
+			flex-direction: row;
+		}
+		.video-container {
+			width: 50%;
+		}
+		label {
+			display: block;
+		}
+		video {
+			width: 100%;
+		}
+
+		.myVideo {
+			position: absolute;
+			max-width: 275px;
+			width: 40%;
+			bottom: 5px;
+			right: 5px;
+			font-size: 8pt;
+		}
+		@media only screen and (max-width: 800px) {
+			#container {
+				flex-direction: column;
+			}
+			.video-container {
+				width: 100%;
+				height: 50%;
+			}
+		}
+	</style>
+<script>
+	const peerOptions = {
+		config: {
+			iceServers: [
+				{ url: 'stun:stun.l.google.com:19302' },
+				{
+					url: 'turn:numb.viagenie.ca',
+					credential: 'muazkh',
+					username: 'webrtc@live.com'
+				}
+			]
+		}
+	};
+	if (localStorage.videoID == undefined) {
+		mypeerID = prompt("What is your ID?");
+		localStorage.videoID = mypeerID;
+	} else {
+		mypeerID = localStorage.videoID;
+	}
+	// console.log(mypeerID);
+
+	console.log("-- Connecting Peer with id ", mypeerID);
+
+	const peer = new Peer(mypeerID);
+	peer.on('open', (id) => {
+		console.log({on: "open"});
+		console.log({PeerID: id});
+		let myID = document.querySelector("#myID");
+		myID.classList.add("connected");
+		myID.innerText = id;
+	});
+
+	// peer.on('stream', stream => {
+	// 	console.log({on: "stream, inside peer"});
+	// 	document.querySelector("#yourCam2").srcObject = stream;
+	// });
+	const constraints = {
+		video: { facingMode: "user" },
+		audio: true
+	};
+	const addVideoStream = (peerID, stream, muted) => {
+		let video = document.querySelector("#" + peerID);
+	  video.srcObject = stream;
+		if (muted == "mute") { video.muted = true; }
+	  video.addEventListener('loadedmetadata', () => {
+	    video.play();
+	  })
+	}
+	const loadLocalstream = async(myID) => {
+		if (navigator.mediaDevices.getUserMedia) {
+			// console.log('mycam');
+			const localStream = await mediaStream(constraints);
+			addVideoStream(myID, localStream, "mute");
+			let myVideo = document.querySelector("#" + myID + "-container");
+			myVideo.classList.add('myVideo');
+			myVideo.classList.remove('video-container');
+
+			peer.on('call', call => {
+					console.log({on: "call"});
+
+					call.answer(localStream);
+					call.on('stream', stream => {
+						console.log({on: "stream, inside call"});
+						addVideoStream(call.peer, stream);
+					});
+			});
+			window.localStream = localStream;
+			checkVideo();
+
+	  }
+	}
+	function checkVideo() {
+		let occupied = 0;
+		document.querySelectorAll("video").forEach(function(e) {
+			if (e.srcObject == null) {
+				connectToUser(e.id);
+				occupied++;
+				console.log(e.id);
+			}
+		});
+		if (occupied > 0) {
+			var t = setTimeout(() => {
+				checkVideo();
+			}, 7000);
+		} else {
+			clearTimeout(t);
+		}
+
+	}
+	function reconnect() {
+		peerIDs.forEach(peerID => {
+			console.log("calling ", peerID);
+			if (localStorage.videoID !== peerID) {
+				connectToUser(peerID);
+			}
+		});
+	}
+	const mediaStream = async (constraints) => {
+		try {
+			const stream = await navigator.mediaDevices.getUserMedia(constraints);
+			return stream;
+		} catch (error) {
+			console.log({mediaStreamError: error});
+			return false;
+		}
+	}
+	const connectToUser = (peerID) => {
+		const thisCall = peer.call(peerID, window.localStream);
+		thisCall.on('stream', stream => {
+			addVideoStream(peerID, stream);
+		});
+		thisCall.on('close', () => {
+			document.querySelector("#" + peerID).srcObject = null;
+		});
+	}
+	const peerIDs = ["firefox", "pratik", "mobile"];
+	loadLocalstream(localStorage.videoID);
+
+</script>
+</head>
+<body>
+	<!-- <video id="myCam" autoplay="true" muted></video> -->
+	<!-- <button id="reconnect">Reconnect</button>
+	<button id="check">Check</button> -->
+	<p id="myID">Connecting...</p>
+	<div id="container">
+		<div class="video-container" id="firefox-container"><label>Amit</label><video id="firefox" autoplay="true"></video></div>
+		<div class="video-container" id="pratik-container"><label>Pratik</label><video id="pratik" autoplay="true"></video></div>
+		<div class="video-container" id="mobile-container"><label>Amit's Mobile</label><video id="mobile" autoplay="true"></video></div>
+	</div>
+</body>
+</html>

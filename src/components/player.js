@@ -29,6 +29,13 @@ const Player = (props) => {
       {props.handStrength !== undefined ?
           <div className="hand-strength">{props.handStrength}, {props.potSplit}%</div>
         : null }
+      <video
+        index={props.playerNo}
+        ref={props.setVideoRef}
+        className="player-video"
+        autoPlay={true}
+        playsInline
+        />
 		</div>
   );
 }

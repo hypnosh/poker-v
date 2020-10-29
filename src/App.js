@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Suspense } from 'react';
 import {
   Route,
   BrowserRouter,
@@ -10,10 +10,12 @@ import Signup from './auth/signup';
 import Login from './auth/login';
 
 import TableList from './components/tablelist';
-import Arena from './components/arena';
 import './styles/main.css';
 import {app, auth, db} from './services/firebase';
 
+// const Arena = React.lazy(() => import('./components/arena'));
+import Arena from './components/arena';
+/* Lazy load Arena/Table */
 
 class App extends Component {
   state = {
@@ -71,10 +73,16 @@ class App extends Component {
     return (
       <BrowserRouter>
         <Switch>
-          <PrivateRoute exact path="/" component={TableList} authenticated={this.state.authenticated} />
-          <PrivateRoute path="/table/:id" component={Arena} authenticated={this.state.authenticated} />
-          <PublicRoute path="/signup" component={Signup} authenticated={this.state.authenticated} />
-          <PublicRoute path="/login" component={Login} authenticated={this.state.authenticated} />
+          <PrivateRoute exact
+            path="/" component={TableList} authenticated={this.state.authenticated} />
+          <PrivateRoute
+            path="/table/:id" component={Arena} authenticated={this.state.authenticated} />
+          <PublicRoute
+            path="/signup" component={Signup} authenticated={this.state.authenticated} />
+          <PublicRoute
+            path="/login" component={Login} authenticated={this.state.authenticated} />
+          <Route
+            render={() => <h1>Not Found</h1>} />
         </Switch>
         {/* AppScreen */}
       </BrowserRouter>
