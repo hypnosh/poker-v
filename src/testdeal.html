@@ -1,0 +1,71 @@
+<script>
+function dealCards(tableID, numPlaying) {
+  let arr = Array.from(Array(52).keys());
+  const cards = [],
+      suites = ['s', 'd', 'c', 'h'],
+      suitesSymbols = ['&spades;', '&diams;', '&clubs;', '&hearts;'],
+      ranks = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A'];
+  for (var i = 0; i < 52; i++) {
+    let rank = ranks[i % 13];
+    let suite = suites[parseInt(i/13)];
+    // let suiteSymbol = suitesSymbols[parseInt(i/13)];
+    cards[i] = rank + suite;
+  }
+  // how many times I shuffle the deck, 5 to 15
+  let numPasses = (Math.random() * 10 + 5) | 0;
+  for (let i = 0; i < numPasses; i++) {
+    // shuffle the deck
+    cards.sort(() => Math.random() - 0.5);
+  }
+  let cardIndex = 0,
+    playerCount = numPlaying.length;
+  const playerHands = [], flop = [];
+  // deal cards & store in hands branch
+  numPlaying.forEach(plyr => {
+    // take the first card from the deck, plus the first card after first pass
+    let thisPlayerHand = {
+      [plyr]: [cards[cardIndex], cards[cardIndex + playerCount]]
+    };
+    playerHands.push(thisPlayerHand); // add to the array
+    cardIndex++;
+    cardIndex++;
+  });
+  // burn 1
+  cardIndex++;
+  // flop
+  flop.push(cards[cardIndex]);
+  cardIndex++;
+  flop.push(cards[cardIndex]);
+  cardIndex++;
+  flop.push(cards[cardIndex]);
+  cardIndex++;
+  // burn 1
+  cardIndex++;
+  // turn
+  turn = cards[cardIndex];
+  cardIndex++;
+  // burn 1
+  cardIndex++;
+  // river
+  river = cards[cardIndex];
+
+return({
+    table: tableID,
+    playerHands: playerHands,
+    flop: flop,
+    turn: turn,
+    river: river,
+  });
+  console.log("Hi");
+  // create a new hand doc. store the hand ID in table doc
+}
+
+
+let plyrs = [
+    "A",
+    "A",
+    "A",
+    "A",
+  ];
+console.table(dealCards("2zLwrEyJWbOg1MIpmVUJ", plyrs));
+</script>

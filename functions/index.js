@@ -16,48 +16,183 @@ exports.SitIn = functions.https.onCall((data, context) => {
   const tableID = data.tableID;
   const email = data.email;
   const position = data.position;
+  const name = data.name;
   return db.collection("tables").doc(tableID).get()
     .then(doc => {
       if (!(doc && doc.exists)) {
         return "error: no such table";
       }
-      const data = {...doc.data()};
-      const players = data.players;
-      const thisPlayerIndex = players.findIndex(player => {
-        return player.email === email;
-      });
+      const docData = {...doc.data()};
+      const players = docData.players;
+      const thisPlayerIndex = players.findIndex(player => (player.email === email));
       players[thisPlayerIndex].position = position;
+      players[thisPlayerIndex].name = name;
       players[thisPlayerIndex].status = "playing";
 
       // check if two players are sitting
       var numPlaying = players.filter((player) => {
-        return (player.position !== undefined && player.status == "playing");
+        return (player.position !== undefined && player.status === "playing");
       });
 
-      if (numPlaying.length == 2) {
+      if (numPlaying.length === 2) {
         // start the game
         // who is the button, sb, bb
         let buttonPos = numPlaying[0].idx;
         let smallBlind = numPlaying[1].idx;
         let bigBlind = numPlaying[0].idx;
-        // deal
-        dealCards(tableID);
+        const betObjectInit = {
+          "preflop": {
+            0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0
+          },
+          "flop": {
+            0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0
+          },
+          "turn": {
+            0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0
+          },
+          "river": {
+            0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0
+          }
+        }
 
+        // deal
+        dealCards(tableID, numPlaying).then(docRef => {
+          db.collection("tables").doc(tableID).update({
+            handID: docRef.id
+          });
+          // create a betting branch for this table
+          db.collection("bets").doc(tableID).set(betObjectInit);
+          return ([tableID, handID]);
+        }).catch(error => error);
       }
 
-      return db.collection("tables").doc(tableID).set(data);
+      return db.collection("tables").doc(tableID).set(docData);
       // write to firebase
     });
 
 }); // SitIn
 
-const dealCards = (tableID) => {
+const dealCards = async (tableID, numPlaying) => {
+  // let arr = Array.from(Array(52).keys());
+  // suitesSymbols = ['&spades;', '&diams;', '&clubs;', '&hearts;'],
+  const cards = [],
+      suites = ['s', 'd', 'c', 'h'],
+      ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'];
+  for (var i = 0; i < 52; i++) {
+    let rank = ranks[i % 13];
+    let suite = suites[parseInt(i/13)];
+    // let suiteSymbol = suitesSymbols[parseInt(i/13)];
+    cards[i] = rank + suite;
+  }
+  // how many times I shuffle the deck, 2 to 7
+  let numPasses = (Math.random() * 5 + 2) | 0;
+  for (let i = 0; i < numPasses; i++) {
+    // shuffle the deck
+    cards.sort(() => Math.random() - 0.5);
+  }
+
+  let cardIndex = 0,
+    playerCount = numPlaying.length;
+
+  const playerHands = [], flop = [];
   // deal cards & store in hands branch
+  numPlaying.forEach(plyr => {
+    // take the first card from the deck, plus the first card after first pass
+    let thisPlayerHand = {
+      [numPlaying.idx]: [cards[cardIndex], cards[cardIndex + playerCount]]
+    };
+    playerHands.push(thisPlayerHand); // add to the array
+    cardIndex++;
+    cardIndex++; // because we're dealing both cards of each player at once
+  });
+  // burn 1
+  cardIndex++;
+
+  // flop
+  flop.push(cards[cardIndex]);
+  cardIndex++;
+  flop.push(cards[cardIndex]);
+  cardIndex++;
+  flop.push(cards[cardIndex]);
+  cardIndex++;
+  // burn 1
+  cardIndex++;
+
+  // turn
+  turn = cards[cardIndex];
+  cardIndex++;
+  // burn 1
+  cardIndex++;
+
+  // river
+  river = cards[cardIndex];
+  // will need to increment if we do run it twice some day
+
+  return db.collection("hands").add({
+    table: tableID,
+    playerHands: playerHands,
+    flop: flop,
+    turn: turn,
+    river: river,
+  });
   // create a new hand doc. store the hand ID in table doc
 }
 
 exports.Bet = functions.https.onCall((data, context) => {
-  { tableID, street, playerID, bet } = data;
+  const { handID, street, playerID, bet, action } = data;
   // update table with tableID for street , bet of playerID
 
-}
+  // update bet branch with existing data + new data
+  db.collection("bets").doc(tableID).get()
+    .then(snapshot => {
+      const betObject = snapshot.data(); // get data from client
+      const thisStreet = betObject[street];  // get the old bets in this street
+      const oldBet = thisStreet[playerID]; // get the player's old bet in this street
+      const newBet = oldBet + bet; // player's new bet
+      thisStreet[playerID] = newBet; // set the new bet in the street
+      betObject[street] = thisStreet; // set the main object
+      // update table with new bet & action
+      db.collection("tables").doc(tableID).get()
+        .then(doc => {
+          const docData = {...doc.data()};
+          const players = docData.players;
+          const thisPlayerIndex = players.findIndex(player => (player.idx === playerID));
+          players[thisPlayerIndex].bet = newBet;
+          players[thisPlayerIndex].status = action;
+
+          // PRATIK: pot calculation
+          // PRATIK: side pot
+          // move pointer to next player basis conditions (PRATIK)
+          return db.collection("tables").doc(tableID).update(docData);
+        });
+      // write to db
+      return db.collection("bets").doc(tableID).update(betObject);
+    }).catch(error => error);
+}); // Bet
+
+
+
+exports.DummyDeal = functions.https.onRequest((req, res) => {
+  // just to test if dealCards() is working fine.
+  // will remove in production.
+
+  let plyrs = [
+    {idx: 0, name: "A"},
+    {idx: 1, name: "A"},
+    {idx: 2, name: "A"},
+    {idx: 3, name: "A"},
+  ], tableID = "2zLwrEyJWbOg1MIpmVUJ";
+
+  dealCards(tableID, plyrs).then(docRef => {
+    console.log("cards dealt ", docRef.id);
+    db.collection("tables").doc(tableID).update({
+      handID: docRef.id
+    });
+    return docRef.id;
+  }).catch(error => {
+    console.log("error in dealing ", error);
+    return error;
+  });
+  //   throw (error);
+  // });
+}); // DummyDeal

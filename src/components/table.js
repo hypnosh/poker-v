@@ -7,7 +7,9 @@ import { app, auth, db, svrfunctions as fbfn } from '../services/firebase';
 import Peer from 'peerjs';
 import '../styles/game.css';
 
-const sitIn = fbfn.httpsCallable('SitIn');
+const _sitIn = fbfn.httpsCallable('SitIn');
+const _Bet = fbfn.httpsCallable('Bet');
+
 
 class Table extends Component {
   constructor(props) {
@@ -55,14 +57,19 @@ class Table extends Component {
       playerAction: 1,
       flop: ["3h", "7s", "Qc"],
       turn: "Jd",
-      river: "Td",
       raiseFlag: false,
+      user: {
+        email: ''
+      },
+      email: ''
     }
     this.takeSeat = this.takeSeat.bind(this);
     this.callSize = this.callSize.bind(this);
     this.foldAction = this.foldAction.bind(this);
     this.callAction = this.callAction.bind(this);
     this.raiseAction = this.raiseAction.bind(this);
+
+    this.connectToUser = this.connectToUser.bind(this);
 
     this.localVideoRef = React.createRef();
     this.remoteVideoRef = [];
@@ -77,12 +84,90 @@ class Table extends Component {
   };
   async componentDidMount() {
     // get user's details
+    // auth.currentUser
     auth().onAuthStateChanged((user) => {
       if (user) {
+        let me = this.state.players.filter(player => {
+          return (player.email === user.providerData[0].email);
+        })[0];
+        const displayName = user.displayName;
+        const nameArray = displayName.split(" ");
+        const [firstName, lastName] = nameArray;
         this.setState({
           authenticated: true,
-          user: user.providerData[0]
+          user: user.providerData[0],
+          email: user.providerData[0].email,
+          me: me
         });
+        let tableDocRef = db.collection("tables").doc(this.state.tableID);
+        //let querySnapshot = await db.collection("tables").doc(this.state.tableID).get();
+        tableDocRef.onSnapshot(snapshot => {
+          let tableData = snapshot.data();
+          const playersFromFB = tableData.players.map((player, index) => {
+            player.idx = index+1;
+            // console.log(player);
+            return player;
+          });
+          let me = playersFromFB.filter(player => {
+            return (player.email === this.state.user.email);
+          })[0];
+          this.setState({
+            players: playersFromFB,
+            me: me,
+            playerID: me.idx
+          });
+          db.collection("video").doc(this.props.id).update({
+            [this.state.playerID]: "videoOn"
+          });
+          // console.log("STATE ---");
+          // console.log(tableData.players);
+          // console.log(this.state.players);
+          // console.log(playersFromFB);
+          const mypeerID = this.state.playerID + "@" + this.state.tableID;
+          const peer = new Peer(mypeerID);
+          console.log("my peer ", mypeerID);
+          this.setState({
+            peer: peer
+          });
+
+          console.log ("Peer on");
+          peer.on('open', (id) => {
+            console.log({ on: "open" });
+            console.log({ PeerID: id });
+          });
+          // if already sitting
+          // console.log(this.state.me, this.state.me.position);
+          console.log(this.state.players);
+          console.log(this.state.email);
+          let myPosition = this.state.me.position;
+          if (myPosition) {
+            console.log("Already sitting");
+            this.loadLocalstream();
+          }
+          // set video doc entry for me
+          // console.log({playerID: this.state.playerID});
+          db.collection("video").doc(this.props.id).update({
+            [this.state.playerID]: "videoOn"
+          });
+          // video doc onSnapshot
+          db.collection("video").doc(this.props.id)
+            .onSnapshot(doc => {
+              let videoData = doc.data();
+              if (typeof videoData === "array") {
+                videoData.forEach(pair => {
+                  console.log(pair);
+                });
+              } else if (typeof videoData === "object") {
+                for (let key in videoData) {
+                  if (videoData[key] === "videoOn") {
+                    if (!(+key === this.state.playerID)) this.connectToUser(key);
+                  }
+                }
+              }
+            });
+        });
+
+
       } else {
         this.setState({
           authenticated: false
@@ -94,61 +179,42 @@ class Table extends Component {
     // get hand details - ID from table record - listen
     // get bids - listen
     // console.log(this.state.tableID);
-    try {
-      let querySnapshot = await db.collection("tables").doc(this.state.tableID).get();
-      let tableData = querySnapshot.data();
-      console.log(tableData);
-    } catch(error) {
-      console.log("Error in getting table ", error);
-    }
-    const mypeerID = this.state.playerID + "@" + this.state.tableID;
-    const peer = new Peer(mypeerID);
-    this.setState({
-      peer: peer
-    });
-    peer.on('open', (id) => {
-      console.log({ on: "open" });
-      console.log({ PeerID: id });
-    });
-    this.loadLocalstream();
-    // const localStream = await initiateLocalStream();
-    // this.localVideoRef.srcObject = localStream;
 
-    // const localConnection = await initiateConnection();
 
-    // this.setState({
-    //   localStream,
-    //   localConnection
-    // });
-    // await doLogin(this.props.id, db.collection('video'), this.handleVideoUpdate, username);
+
+
   } // componentDidMount
 
   setLocalVideoRef = ref => {
     this.localVideoRef = ref;
-    this.localVideoRef.muted = true;
+    // this.localVideoRef.muted = true;
   }
 
   setRemoteVideoRef = ref => {
     // console.log(ref);
-    let playerID = (ref.getAttribute('index'));
-    this.remoteVideoRef[playerID] = ref;
+    if (ref) {
+      let playerID = (ref.getAttribute('index'));
+      this.remoteVideoRef[playerID] = ref;
+    }
   }
-  
+
 
   addVideoStream = (peerID, stream, muted) => {
     // let video = document.querySelector("#" + peerID);
     let video;
-    if (peerID == "me") {
+    if (peerID === "me") {
       video = this.localVideoRef;
     } else {
-      // करते हैें कुछ
+      // identify other players' videos
+      video = this.remoteVideoRef[peerID + "@" + this.state.tableID];
     }
-    
-    video.srcObject = stream;
-    if (muted == "mute") { video.muted = true; }
-    video.addEventListener('loadedmetadata', () => {
-      video.play();
-    })
+    if (video) {
+      video.srcObject = stream;
+      if (muted === "mute") { video.muted = true; }
+      video.addEventListener('loadedmetadata', () => {
+        video.play();
+      });
+    }
   }
   loadLocalstream = async (myID) => {
     if (navigator.mediaDevices.getUserMedia) {
@@ -185,87 +251,42 @@ class Table extends Component {
     }
   }
   connectToUser = (peerID) => {
-    const thisCall = this.state.peer.call(peerID, window.localStream);
-    thisCall.on('stream', stream => {
-      this.addVideoStream(peerID, stream);
-    });
-    thisCall.on('close', () => {
-      // document.querySelector("#" + peerID).srcObject = null;
-    });
+    // console.log(this.state.peer);
+    console.log({connecttouser: peerID});
+    console.log("connecting to peer ", peerID + "@" + this.state.tableID);
+    let peer = this.state.peer;
+    let thisCall = peer.call(peerID + "@" + this.state.tableID, this.state.localStream);
+    console.log("thiscall");
+    console.log(thisCall);
+    if (thisCall !== undefined) {
+      thisCall.on('stream', stream => {
+        this.addVideoStream(peerID, stream);
+      });
+      thisCall.on('close', () => {
+        // document.querySelector("#" + peerID).srcObject = null;
+      });
+    }
   }
-  // myStartCall = async (username, userToCall) => {
-  //   console.log("myStartCall", username, userToCall);
-  //   const { localConnection, database, localStream } = this.state
-  //   listenToConnectionEvents(localConnection, username, userToCall, database, this.remoteVideoRef, doCandidate)
-  //   // create an offer
-  //   createOffer(localConnection, localStream, userToCall, doOffer, database, username)
-  // }
-
-  // handleVideoUpdate = (snapshotData, username) => {
-  //   console.log("handleUpdate", username);
-  //   console.log(snapshotData);
-  //   const { localConnection, localStream } = this.state;
-
-  //   if (snapshotData) {
-  //     snapshotData.forEach(entry => {
-  //       if (entry) {
-  //         switch (entry.type) {
-  //           case 'offer':
-  //             // this.setState({
-  //             //   connectedUser: entry.from
-  //             // });
-
-  //             listenToConnectionEvents(localConnection, username, entry.from, db.collection('video'), this.remoteVideoRef, doCandidate);
-
-  //             sendAnswer(localConnection, localStream, entry, doAnswer, db.collection('video'), username);
-  //           break;
-  //           case 'answer':
-
-  //             this.setState({
-  //               connectedUser: entry.from
-  //             });
-  //             startCall(localConnection, entry);
-  //           break;
-  //           case 'candidate':
-  //             addCandidate(localConnection, entry);
-  //           break;
-  //           default:
-  //           break
-  //         }
-  //       }
-  //     });
-
-  //   }
-  // }
 
   takeSeat = (event) => {
-    console.log("takeSeat");
+    // console.log("takeSeat");
     const position = event.target.dataset.position;
-    if (navigator.mediaDevices.getUserMedia) {
-	    navigator.mediaDevices.getUserMedia({
-	      video: true,
-	      audio: true
-	    }).then(function(stream) {
-	      this.setState({
-
-        });
-	    }).catch(function(error) {
-	      console.log("Error", error);
-	    });
-	  }
-    sitIn({
+    _sitIn({
       tableID: this.state.tableID,
       email: this.state.user.email,
+      name: this.state.user.displayName,
       position: position
     })
       .then(result => {
-        console.log("SitIn -----");
-        console.log(result);
-        console.log(result.data);
+        // console.log("SitIn -----");
+        // console.log(result);
+        // console.log(result.data);
+        // start video
+        this.loadLocalstream();
       })
       .catch(error => {
-        console.log("SitIn error ----");
-        console.log(error);
+        // console.log("SitIn error ----");
+        console.error(error);
       });
   }
 
@@ -279,10 +300,32 @@ class Table extends Component {
   }
   foldAction = () => {
     // send fold action - fold()
+    _Bet({
+      handID: this.state.handID,
+      street: this.state.street,
+      playerID: this.state.playerID,
+      bet: 0,
+      action: "fold"
+    }).then(result => {
+      console.log("betting result ", result);
+    }).catch(error => {
+      console.log(error);
+    });
   }
   callAction = () => {
     // send check or call action - bet(0) or bet(call)
     this.setState({myBet: this.callSize()});
+    _Bet({
+      handID: this.state.handID,
+      street: this.state.street,
+      playerID: this.state.playerID,
+      bet: this.callSize(),
+      action: "check"
+    }).then(result => {
+      console.log("betting result ", result);
+    }).catch(error => {
+      console.log(error);
+    });
   }
   raiseAction = () => {
     if (this.state.raiseFlag) {
@@ -290,7 +333,17 @@ class Table extends Component {
       const myBet = this.state.myBet;
 
       this.setState({raiseFlag: false});
-
+      _Bet({
+        handID: this.state.handID,
+        street: this.state.street,
+        playerID: this.state.playerID,
+        bet: myBet,
+        action: "raise"
+      }).then(result => {
+        console.log("betting result ", result);
+      }).catch(error => {
+        console.log(error);
+      });
     } else {
       this.setState({raiseFlag: true});
     }
@@ -332,23 +385,24 @@ class Table extends Component {
     // figure out bet size
 
     let minBet = this.callSize();
-    let callButtonText = (minBet == 0) ? "Check" : "Call (" + minBet + ")";
+    let callButtonText = (minBet === 0) ? "Check" : "Call (" + minBet + ")";
     let me = this.state.players.filter(player => {
-      return (player.idx == this.state.playerID);
+      return (player.email === this.state.user.email);
+      // return (player.idx === this.state.playerID);
     })[0];
-
+    // console.log(me);
     // change window title to table details
     document.title = `Table # ${this.state.tableID} | ${this.state.blinds[0]}/${this.state.blinds[1]}` ;
 
     return (
       <div className="table">
         <div className="players">
-          {this.state.players.map((player, index) => {
+          {this.state.players ? this.state.players.map((player, index) => {
             const playerHand = (player.hand) ? player.hand : "hide";
             if (player.position && player.status) {
               // figure out where to place each player on this client's screen
               let thisPosition = player.position;
-              if (me.position) {
+              if (me && me.position) {
                 thisPosition = player.position - me.position + 1;
                 thisPosition = (thisPosition < 1) ? thisPosition + 6 : thisPosition;
                 // console.log({player: player.name, thisPosition: thisPosition, playerPosition: player.position, mePosition: me.position});
@@ -370,11 +424,11 @@ class Table extends Component {
                   setVideoRef={ thisPosition === 1 ? this.setLocalVideoRef : this.setRemoteVideoRef }
                 />);
             } else {
-              if (!me.position) {
+              if (me && !me.position) {
                 return (
                   <div
                     key={player.idx}
-                    className={`sit-here-button player-` + player.idx}
+                    className={`sit-here-button playerseat-` + player.idx}
                     >
                     <button
                       onClick={this.takeSeat}
@@ -385,7 +439,7 @@ class Table extends Component {
                 );
               }
             }
-            })}
+          }) : null}
         </div>
         <span className={`dealer dealer-${this.state.button}`}>D</span>
         <div className="felt">
@@ -394,7 +448,7 @@ class Table extends Component {
         <div className="pot">
           {this.state.pot}
         </div>
-        {((this.state.playerID == this.state.playerAction)) ?
+        {((this.state.playerID === this.state.playerAction)) ?
           <div className="buttons">
             <button onClick={this.foldAction}
               className="btn action-button action-fold">Fold</button>

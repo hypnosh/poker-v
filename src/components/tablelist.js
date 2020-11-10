@@ -43,12 +43,12 @@ class TableList extends Component {
     ];
     const startingStack = event.target.blinds.value.split("/")[1] * 100;
     const players = [
-      { email: this.state.user.email, stack: startingStack },
-      { email: event.target.player2.value, stack: startingStack },
-      { email: event.target.player3.value, stack: startingStack },
-      { email: event.target.player4.value, stack: startingStack },
-      { email: event.target.player5.value, stack: startingStack },
-      { email: event.target.player6.value, stack: startingStack },
+      { idx: 0, email: this.state.user.email, stack: startingStack },
+      { idx: 1, email: event.target.player2.value, stack: startingStack },
+      { idx: 2, email: event.target.player3.value, stack: startingStack },
+      { idx: 3, email: event.target.player4.value, stack: startingStack },
+      { idx: 4, email: event.target.player5.value, stack: startingStack },
+      { idx: 5, email: event.target.player6.value, stack: startingStack },
     ];
     const playerEmails = [
       this.state.user.email,
@@ -72,6 +72,14 @@ class TableList extends Component {
       console.log("Table created", docRef);
       alert("Table created");
       this.setState({ formDisplay: false });
+      db.collection("video").add({
+        0: "videoOff",
+        1: "videoOff",
+        2: "videoOff",
+        3: "videoOff",
+        4: "videoOff",
+        5: "videoOff",
+      });
     })
     .catch((error) => {
       console.log("Table creation error", error);
