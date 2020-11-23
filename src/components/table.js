@@ -37,21 +37,16 @@ class Table extends Component {
         {
           idx: 3, name: "Saumitra", stack: 8000, bet: 70,
           status: "sittingout",
-
         },
         {
           idx: 4, name: "Saurabh", stack: 8000, bet: 100,
           status: "playing",
-
         },
         {
           idx: 5, name: "Premi", stack: 8000, bet: 120,
-
-
         },
         {
           idx: 6, name: "Manish", stack: 8000, bet: 60,
-
         }
       ],
       playerAction: 1,
@@ -315,12 +310,14 @@ class Table extends Component {
   callAction = () => {
     // send check or call action - bet(0) or bet(call)
     this.setState({myBet: this.callSize()});
+    let allIn = (this.callSize() >= me.stack);
     _Bet({
       handID: this.state.handID,
       street: this.state.street,
       playerID: this.state.playerID,
       bet: this.callSize(),
-      action: "check"
+      action: "call",
+      allIn: allIn
     }).then(result => {
       console.log("betting result ", result);
     }).catch(error => {
@@ -331,14 +328,15 @@ class Table extends Component {
     if (this.state.raiseFlag) {
       // read the raise amount and call the function - bet(raise)
       const myBet = this.state.myBet;
-
+      let allIn = (myBet == me.stack);
       this.setState({raiseFlag: false});
       _Bet({
         handID: this.state.handID,
         street: this.state.street,
         playerID: this.state.playerID,
         bet: myBet,
-        action: "raise"
+        action: "raise",
+        allIn: allIn
       }).then(result => {
         console.log("betting result ", result);
       }).catch(error => {

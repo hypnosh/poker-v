@@ -139,7 +139,7 @@ const dealCards = async (tableID, numPlaying) => {
 }
 
 exports.Bet = functions.https.onCall((data, context) => {
-  const { handID, street, playerID, bet, action } = data;
+  const { tableID, handID, street, playerID, bet, action, allIn } = data;
   // update table with tableID for street , bet of playerID
 
   // update bet branch with existing data + new data
@@ -149,6 +149,7 @@ exports.Bet = functions.https.onCall((data, context) => {
       const thisStreet = betObject[street];  // get the old bets in this street
       const oldBet = thisStreet[playerID]; // get the player's old bet in this street
       const newBet = oldBet + bet; // player's new bet
+
       thisStreet[playerID] = newBet; // set the new bet in the street
       betObject[street] = thisStreet; // set the main object
       // update table with new bet & action
@@ -157,12 +158,52 @@ exports.Bet = functions.https.onCall((data, context) => {
           const docData = {...doc.data()};
           const players = docData.players;
           const thisPlayerIndex = players.findIndex(player => (player.idx === playerID));
+          const potsize = docData.pot;
+          const playerAction = docData.playerAction;
+          const street = docData.street;
+
           players[thisPlayerIndex].bet = newBet;
           players[thisPlayerIndex].status = action;
+          const playerStack = players[thisPlayerIndex].stack;
 
-          // PRATIK: pot calculation
+          const playerStatus = players[thisPlayerIndex].status;
+          // PRATIK: pot calculation & stack updation
+          potsize = potsize + bet;
+          stack = stack - bet;
+
           // PRATIK: side pot
+          // if (allIn) { create side pot }
+
           // move pointer to next player basis conditions (PRATIK)
+          playerAction++; // 0 if 6
+          // if all bets equal, then change street
+          // condition will be thisStreet - every
+          let condition = 1;
+          if (condition) {
+            switch(street) {
+              case "preflop":
+                street = "flop";
+              break;
+              case "flop":
+                street = "turn";
+              break;
+              case "turn":
+                street = "river";
+              break;
+              case "river":
+              // compare hands and show
+              // arguments - handID, returns - object with player ranking
+
+              break;
+            }
+          }
+          docData.street = street;
+          docData.pot = potsize;
+          docData.players[thisPlayerIndex].stack = stack;
+          docData.playerAction = playerAction;
+          docData.status = (allIn ? "All in" : (action ==  "fold" : "fold" ? playerStatus));
+
+          // write potsize, player's stack, street, playerAction
           return db.collection("tables").doc(tableID).update(docData);
         });
       // write to db
@@ -176,12 +217,8 @@ exports.DummyDeal = functions.https.onRequest((req, res) => {
   // just to test if dealCards() is working fine.
   // will remove in production.
 
-  let plyrs = [
-    {idx: 0, name: "A"},
-    {idx: 1, name: "A"},
-    {idx: 2, name: "A"},
-    {idx: 3, name: "A"},
-  ], tableID = "2zLwrEyJWbOg1MIpmVUJ";
+  let plyrs = JSON.parse("[{\"idx\":0,\"name\":\"A\"},{\"idx\":1,\"name\":\"A\"},{\"idx\":2,\"name\":\"A\"},{\"idx\":3,\"name\":\"A\"}]"),
+  tableID = "2zLwrEyJWbOg1MIpmVUJ";
 
   dealCards(tableID, plyrs).then(docRef => {
     console.log("cards dealt ", docRef.id);
