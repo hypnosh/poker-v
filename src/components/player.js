@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Card from './card';
 
 const Player = (props) => {
@@ -40,9 +40,9 @@ const Player = (props) => {
   );
 }
 
-const EmptySeat = (props) => {
+/* const EmptySeat = (props) => {
   return (
     <p>Come sit here</p>
   );
-}
+} */
 export default Player;

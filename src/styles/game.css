@@ -17,8 +17,15 @@ button:active {
   color: #fff;
   background: none;
   border: none;
+  padding: 30px;
 }
 
+.email-on-tablelist {
+  display: block;
+  text-align: right;
+  margin-top: -1.6em;
+  font-size: 10pt;
+}
 .table {
   position: absolute;
   width: 850px;
@@ -194,6 +201,18 @@ button:active {
   content: 'Pot';
   display: block;
 }
+.sidepot {
+  position: absolute;
+  text-align: center;
+  width: 150px;
+  color: #fff;
+}
+.sidepot-1 { left: 35%; top: 65%; }
+.sidepot-2 { right: 35%; top: 65%; }
+.sidepot-3 { left: 35%; bottom: 65%; }
+.sidepot-4 { right: 35%; bottom: 65%; }
+.sidepot-5 { left: 50%; top: 45%; }
+
 .buttons {
   position: absolute;
   width: 100%;

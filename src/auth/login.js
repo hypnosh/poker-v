@@ -30,7 +30,10 @@ class Login extends Component {
   }
   async googleSignIn() {
     try {
-      await signInWithGoogle();
+      let result = await signInWithGoogle();
+      let user = result.user;
+      console.log("Google signin");
+      console.log(user);
     } catch (error) {
       this.setState({ error: error.message });
     }

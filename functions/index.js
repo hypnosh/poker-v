@@ -42,16 +42,16 @@ exports.SitIn = functions.https.onCall((data, context) => {
         let bigBlind = numPlaying[0].idx;
         const betObjectInit = {
           "preflop": {
-            0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0
+            0, 0, 0, 0, 0, 0
           },
           "flop": {
-            0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0
+            0, 0, 0, 0, 0, 0
           },
           "turn": {
-            0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0
+            0, 0, 0, 0, 0, 0
           },
           "river": {
-            0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0
+            0, 0, 0, 0, 0, 0
           }
         }
 

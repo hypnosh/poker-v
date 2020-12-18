@@ -1,3 +1,29 @@
+playerHands = [["5h", "As"], ["5d", "Ac"]];
+flop = ["7c", "9h", "Kc"];
+turn = "Jc";
+river = "4c";
+
+const compareHands = (playerHands, flop, turn, river) => {
+  
+  let completeHands = playerHands.map((hand, index) => {
+    return [...hand, ...flop, turn, river];
+  });
+
+
+  let handRanks = completeHands.map((hand, index) => {
+    let cardRanks = hand.map((card, index) => {
+      return card[0];
+    });
+    let cardSuites = hand.map((card, index) => {
+      return card[1];
+    });
+    let handObject = bestHand(cardRanks, cardSuites, index);
+    return handObject.handRank;
+  });
+
+  return handRanks;
+}
+
 function bestHand(playerHandRanks, playerHandSuites, player) {
   // Sequence:
   // Check for flush, get top and bottom card in the top 5 of the suite
@@ -12,6 +38,14 @@ function bestHand(playerHandRanks, playerHandSuites, player) {
   // Check for pair, mark rank + final 3 cards
   // Mark all 5 cards
 
+  var quadsEpoch = 11,
+      fullhouseEpoch = 168,
+      flushEpoch = 335,
+      straightEpoch = 1613,
+      triadsEpoch = 1623,
+      twopairEpoch = 1910,
+      pairEpoch = 2197;
+
   var flush = isFlush(playerHandRanks, playerHandSuites);
   var rankHands = isRankHands(playerHandRanks);
   var straight = isStraight(playerHandRanks);
@@ -21,15 +55,23 @@ function bestHand(playerHandRanks, playerHandSuites, player) {
     var straightFlush = isStraight(flush.flushRanks);
     if (straightFlush === 14) {
       // Royal Flush
-
+      handRank = 1;
     } else if (straightFlush > 0) {
       // Straight Flush
       handRank = 1 + 14 - straightFlush;
     } else {
       // only Flush
-      handRank = 335;
+      handRank = flushEpoch;
     }
   } // check for flushes
+
+  if (straight > 0) {
+    handRank = straightEpoch;
+  }
+
+  if (rankHands.quads !== undefined) {
+    handRank = quadsEpoch;
+  }
   // if (straightFlush > 0) {
   //   // straight flush
   // } else if (rankHands.quads !== undefined) {
@@ -55,8 +97,10 @@ function bestHand(playerHandRanks, playerHandSuites, player) {
     player,
     flush,
     rankHands,
-    straight
+    straight,
+    handRank
   ];
+
 
   console.log({
     player,
@@ -72,7 +116,7 @@ function bestHand(playerHandRanks, playerHandSuites, player) {
 function isRankHands(playerHandRanks) {
   var cardCount = [], specialCounts = {}, pairs = [], quads, triads;
   for (var i = 2; i < 15; i++) {
-    cardCount[i] = playerHandRanks.filter(rank => rank === i).length;
+    cardCount[i] = playerHandRanks.filter(rank => rank === i).length; // what am i trying to do here?
     if (cardCount[i] === 4) {
       // quads
       quads = i;
@@ -90,7 +134,7 @@ function isRankHands(playerHandRanks) {
 } // isRankHands
 function isStraight(playerHandRanks) {
   var phr = [... new Set(playerHandRanks)];
-  if (phr.some(function (a) { return (a === 14); })) { phr.push(1); }
+  if (phr.some((a) => (a === 14))) { phr.push(1); }
   phr.sort((a, b) => {return a - b});
   switch (true) {
     case (phr[6] - phr[2] === 4):
@@ -136,7 +180,7 @@ function isFlush(playerHandRanks, playerHandSuites) {
         flushRanks.push(playerHandRanks[i]);
       }
     }
-    flushRanks.sort(function(a, b){return a - b});
+    flushRanks.sort((a, b) => a - b);
   }
   return ({
     flushSuite,

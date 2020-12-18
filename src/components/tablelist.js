@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+  import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import {app, auth, db} from '../services/firebase';
+import {auth, db} from '../services/firebase';
 
 class TableList extends Component {
   state = {
@@ -33,7 +33,8 @@ class TableList extends Component {
   createTableAction = () => {
     this.setState({formDisplay: true});
   }
-  createTable = (event) => {
+
+  createTable = async(event) => {
     // take inputs from the form and send to server to create a new table
     event.preventDefault();
     const [tableName, blinds, pnl] = [
@@ -42,14 +43,7 @@ class TableList extends Component {
       event.target.pnl.value
     ];
     const startingStack = event.target.blinds.value.split("/")[1] * 100;
-    const players = [
-      { idx: 0, email: this.state.user.email, stack: startingStack },
-      { idx: 1, email: event.target.player2.value, stack: startingStack },
-      { idx: 2, email: event.target.player3.value, stack: startingStack },
-      { idx: 3, email: event.target.player4.value, stack: startingStack },
-      { idx: 4, email: event.target.player5.value, stack: startingStack },
-      { idx: 5, email: event.target.player6.value, stack: startingStack },
-    ];
+
     const playerEmails = [
       this.state.user.email,
       event.target.player2.value,
@@ -57,6 +51,20 @@ class TableList extends Component {
       event.target.player4.value,
       event.target.player5.value,
       event.target.player6.value,
+    ];
+    // get first names from users table
+    const firstNames = playerEmails.map((email, index) => {
+      return db.collection("users").doc(email).get().then(doc => {
+        return doc.exists ? doc.userName : email;
+      });
+    });
+    const players = [
+      { idx: 0, email: this.state.user.email, name: firstNames[0], stack: startingStack },
+      { idx: 1, email: event.target.player2.value, name: firstNames[1], stack: startingStack },
+      { idx: 2, email: event.target.player3.value, stack: startingStack },
+      { idx: 3, email: event.target.player4.value, stack: startingStack },
+      { idx: 4, email: event.target.player5.value, stack: startingStack },
+      { idx: 5, email: event.target.player6.value, stack: startingStack },
     ];
     console.log({tableName, blinds, players, pnl});
 
@@ -98,11 +106,15 @@ class TableList extends Component {
   async componentDidMount() {
     auth().onAuthStateChanged((user) => {
       if (user) {
+        const displayName = user.displayName;
+        const nameArray = displayName.split(" ");
+        const [firstName, lastName] = nameArray; // how to write it to the table?
         this.setState({
           authenticated: true,
           user: user.providerData[0],
           loading: false
         });
+        // await db.collection("users").update()
       } else {
         this.setState({
           authenticated: false
@@ -137,7 +149,7 @@ class TableList extends Component {
     document.title = "Poker Experiments";
     return (
       <div className="table-list-container">
-        <h1 className="appname">Poker with Friends</h1>
+        <h1 className="appname">Poker with Friends</h1><span className="email-on-tablelist">{this.state.user.email}</span>
         <h2 className={this.state.formDisplay ? " fade" : null }>{this.state.user.displayName}'s Tables</h2>
         <button className={`btn btn-main ${this.state.formDisplay ? " fade" : null }`} onClick={this.createTableAction}>Create Table</button>
         <button className="btn btn-sub" onClick={this.logout}>Logout</button>
