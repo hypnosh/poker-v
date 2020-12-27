@@ -41,18 +41,18 @@ exports.SitIn = functions.https.onCall((data, context) => {
         let smallBlind = numPlaying[1].idx;
         let bigBlind = numPlaying[0].idx;
         const betObjectInit = {
-          "preflop": {
+          "preflop": [ 
             0, 0, 0, 0, 0, 0
-          },
-          "flop": {
+          ],
+          "flop": [
             0, 0, 0, 0, 0, 0
-          },
-          "turn": {
+          ],
+          "turn": [
             0, 0, 0, 0, 0, 0
-          },
-          "river": {
+          ],
+          "river": [
             0, 0, 0, 0, 0, 0
-          }
+          ]
         }
 
         // deal

@@ -1,0 +1,196 @@
+allin  <script>
+
+const BUYINAMOUNT = 1000; //userinput
+const BIGBLIND = (BUYINAMOUNT*2)/100; //userinput as an even number
+const SMALLBLIND = BIGBLIND/2;
+const MAXPLAYERS = 6;
+var allinPot2;
+var allinPot3;
+var allinPot4;
+var allinPot5;
+
+//object being created housing all possible pots 1-5.
+//pots.status to be updated with every street change from active to inactive. In a given street, all the pots which have received a bet at any point in time in that street remain active. As we move to next street, all earlier pots (but for the last one) get the status as inactive
+const pots = [{potID: 1, potSize: 0, allinSize: null, potPlayers: [1,2,3,4,5,6], street: "", status: "active"}, {potID: 2, potSize: 0, allinSize: allinPot2, potPlayers: [], street: "",status: ""}, {potID: 3, potSize: 0, allinSize: allinPot3, potPlayers: [], street: "",status: ""}, {potID: 4, potSize: 0, allinSize: allinPot4, potPlayers: [], street: "",status: ""}, {potID: 5, potSize: 0, allinSize: allinPot5, potPlayers: [], street: "",status: ""}]
+
+//create an object array from user inputs (via database)
+const playersBalStatus = [{key: 1, name: "Amit", stack: BUYINAMOUNT, status: "playing", sequence: 6, currentStBet: 0, totalHandBet: 0}, {key: 2, name: "Pratik", stack: BUYINAMOUNT, status: "playing", sequence: 1, currentStBet: 0, totalHandBet: 0}, {key: 3, name: "Saumitra", stack: BUYINAMOUNT, status: "playing", sequence: 2, currentStBet: 0, totalHandBet: 0}, {key: 4, name: "Premc", stack: BUYINAMOUNT, status: "playing", sequence: 3, currentStBet: 0, totalHandBet: 0}, {key: 5, name: "Manish", stack: BUYINAMOUNT, status: "folded", sequence: 4, currentStBet: 0, totalHandBet: 0}, {key: 6, name: "Rohan", stack: BUYINAMOUNT, status: "all-in", sequence: 5, currentStBet: 0, totalHandBet: 0}];
+
+//excluding inactive players so can use the new array for streetBet function
+const activePlayers = playersBalStatus.filter(player => player.status === "playing");
+
+//sequencing activePlayers in order of betting turns
+const sequencedActivePlayers = activePlayers.sort(function(a,b){return a.sequence - b.sequence});
+const seqPlayerIds = sequencedActivePlayers.map(player => player.key);
+
+const seqActivePlayerBal = sequencedActivePlayers.map(player => player.stack);
+
+const bettingStreets = ["preflop", "flop", "turn", "river"];
+
+function streetBetting() {
+  var b = 0; //b stands for bet amount
+  var streetBet = [];
+  for (i = 0; i < activePlayers.length; i++) {
+    let b = parseInt(prompt("Bet amount is "));//UI TO ENSURE THAT BET AMOUNT >= 0 AND <= STACK OF THE PLAYER
+    pots[0].potSize += b;
+    //potBalance = potBalance + b;
+    let objInd = sequencedActivePlayers.findIndex((obj => obj.key === seqPlayerIds[i]));
+    sequencedActivePlayers[objInd].stack -= b;
+    //TO FACTOR IN WHAT TO DO IF A PLAYER FOLDS OR GOES ALL-IN. HOW TO REMOVE FOLDED PLAYER FROM THE LOOP FOR FURTHER BETS
+    streetBet.push(b);
+// TO REMOVE THE FOLDED PLAYER FROM THIS OBJECT STREETBET AT THIS STAGE OR SOMEHOW ENSURE THAT both the player and its bet GETS COUNTED AS NULL - SO THERE IS NO PROMPT FOR THIS PLAYER FOR ANY more BET
+//How to filter without creating a new array
+  }
+  while (!(streetBet.every((val, i, arr) => val === arr[0]))) {
+    for (i=0; i<activePlayers.length; i++) {
+      if(!(streetBet.every((val, i, arr) => val === arr[0]))) {
+        let b2 = parseInt(prompt("Bet amount is "));
+        //TO FACTOR IN - if a player folds then the object array and the array, both get updated
+        pots[0].potSize += b2;
+        streetBet[i] += b2;
+        let objInd2 = sequencedActivePlayers.findIndex((obj => obj.key === seqPlayerIds[i]));
+        sequencedActivePlayers[objInd2].stack -= b2;
+      }
+    }
+  }
+  console.log(streetBet, pots);
+}
+
+var allinPlayerStBetAmount = parseInt(prompt("All-in Bet amount is "));//to pick up from user input from the event of choosing all-in for a player
+streetBetting()
+
+//given the allin bet amount and player who went allin, create a sidepot array
+let j = 1;//counter for pot name
+//let k = 0;//counter for number of additional allins in the same street with lower allinSize
+function createSidePot(allinPlayerStBetAmount, allinPlayerID, thisStreetName){
+//even in a case where more than one player with same stack size goes allin in one street, the first player's allin creates this sidepot so the argument is first player.
+
+  const playersForSidePot = playersBalStatus.filter(player => player.status === "playing" && player.key != allinPlayerID);
+  //removed the condition player.stack > 0 to take care of multiple Forced sidepot creation in the same street in which case the pots to be split and capped and players will need to be reallocated - and some players having 0 stack balance at that point can also be part of earlier pots
+  if(playersForSidePot.length < 2) return console.log("At least two players needed for side pots");
+  //If the above condition is met , then end of betting and ultimately compare hands
+  //TO ENSURE that when only two players are left, and one goes allin, the second player cant bet more than the allin amount
+  j = j + 1//when the new pot gets created, we increment the counter by 1
+
+  const sidePotPlayerIds = playersForSidePot.map(player => player.key);
+  pots[j].potPlayers = sidePotPlayerIds;
+  pots[j].allinSize = allinPlayerStBetAmount;
+  pots[j].street = thisStreetName;
+  pots[j].status = "active"
+  //create an object to track allins mapping a particular allinSize with the respective player and the particular street. Populate this on React using eventlistener or any other mechanism. This will be needed at the time of reassigning pot players to multiple side pots created on same street (forced allin case as captured in the splitPreviousPotsAndReassign function)
+  const allinsThusFar = [{street: , allinPlayerID: , allinPlayerStBetAmount: }]//to be populated from firebase as and when allin event occurs
+
+  if (j<=2 && allinPlayerStBetAmount < Math.max(thisStreetBets)){
+    splitActivePot(allinPlayerStBetAmount, allinPlayerID, thisStreetName);//j<=2 means that this is the first side pot only and hence no need to compare the street of creation of this pot with the previous one
+  }
+    else if (j<=2 && allinPlayerStBetAmount >= Math.max(thisStreetBets)){
+      return; //goes out of the loop and on to the next function
+    }
+    else if (j>2 && thisStreetName === pots[j-1].street && allinPlayerStBetAmount >= Math.max(thisStreetBets)){
+      return;// j>2 means that this is a sidepot subsequent to sidepot1. To check this with example.
+    }
+    else if (j>2 && thisStreetName != pots[j-1].street && allinPlayerStBetAmount < Math.max(thisStreetBets)){
+      splitActivePot(allinPlayerStBetAmount, allinPlayerID, thisStreetName);
+    }
+    else {
+      //k = k + 1;
+      if (thisStreetName === pots[j-1].street && allinPlayerStBetAmount < pots[j-1].allinSize){
+        splitPreviousPotsAndReassign(allinPlayerStBetAmount, allinPlayerID, thisStreetName)//split j-2; rename/reassign pots , pot players also change?
+      }
+      if (thisStreetName === pots[j-1].street && allinPlayerStBetAmount < Math.max(thisStreetBets) && allinPlayerStBetAmount > pots[j-1].allinSize){
+        splitPreviousPotsAndReassign(allinPlayerStBetAmount, allinPlayerID, thisStreetName)
+      }
+
+      //any other scenario to be captured? do we say return anywhere?
+    }
+}
+function splitActivePot (allinPlayerStBetAmount, allinPlayerID, thisStreetName)  {
+  const streetBetToShiftToNewPot = thisStreet.map(function(x, idx){ //const thisStreet = betObject[street] already defined in index.js
+    return Math.max(x - allinPlayerStBetAmount, 0);
+    });
+  let totalStreetBetToShiftToNewPot = streetBetToShiftToNewPot.reduce(function(a,b){
+    return a + b;
+    });
+
+  pots[j].potSize = totalStreetBetToShiftToNewPot;
+  pots[j-1].potSize = pots[j-1].potSize - totalStreetBetToShiftToNewPot;
+    }
+
+function splitPreviousPotsAndReassign (allinPlayerStBetAmount, allinPlayerID, thisStreetName)  {
+  //count number of active pots at this point in time (in this street)
+  let numberOfActivePots = 0;
+  for (let i = 0; i < pots.length; i++) {
+    if (pots[i].status === "active") numberOfActivePots++
+  }
+  //cap j-numberOfActivePots+1 at min(all in amounts for active pots)
+  const activePotsInCurrentSt = pots.filter(pot => pot.status === "active");
+  const allinSizesCurrentSt = activePotsInCurrentSt.map(x => x.allinSize);
+  //if (allinSizesCurrentSt[0] = null) allinSizesCurrentSt.shift() - Dont need this as null is always sorted at the begining of the array (coercing null to a number returns 0. Refer https://philna.sh/blog/2019/08/26/how-not-to-sort-an-array-in-javascript/ )
+
+  allinSizesCurrentSt.sort((a,b) => a-b);//arranged in ascending order
+  //split and cap-out the first active pot correspoding to the min allin size
+
+  for (i=0; i<numberOfActivePots; i++) {
+    activePotsInCurrentSt[i].allinSize = allinSizesCurrentSt[i];
+
+      //TO DO TOGETHER: activePotsInCurrentSt[i].potPlayers = populate by applying two conditions: (i) player.status = playing, (ii) player i total bet in the street > allinSize of pot[i+1]
+    if ((i+1) === numberOfActivePots) break;//Why this is needed??
+
+    activePotsInCurrentSt[i].potPlayers = thisStreet.map(function(bet, idx){
+      if(bet>=allinSize[i+1])
+        return idx
+    });
+
+
+    let totalBetsInThisStreet = thisStreet.reduce(function(a,b) {return a+b;});
+    const stBetToMoveToSubseqPots = thisStreet.map(function(x,idx){
+      return Math.max(x - allinSizesCurrentSt[i+1], 0)
+    });
+    totalStBetToMoveToSubseqPots = stBetToMoveToSubseqPots.reduce(function(a,b) { return a+b;});
+    //WE HAVE DISCUSSED TILL HERE
+    activePotsInCurrentSt[i].potSize = totalBetsInThisStreet - totalStBetToMoveToSubseqPots;
+    activePotsInCurrentSt[i+1].potSize = totalStBetToMoveToSubseqPots;
+
+  //first filter pots to find out the earliest active pot in this street
+  //sort the active pots array in ascending potID order
+  //activePotsInCurrentStreet.sort(function(a,b){return a.potID - b.potID});
+
+  }
+
+
+function sidePotBet(bet){
+  const oldBet = thisStreet[playerID];//as defined in index.js
+  const newBet = oldBet + bet;//as defined in index.js
+  if (bet = playerStack){ //playerStack = players[thisPlayerIndex].stack already defined in index.js
+    createSidePot(newBet, players[thisPlayerIndex].idx, thisStreetName)}
+    else if (newBet >= allinPlayerStBetAmount){
+      pots[j-1].potSize += allinPlayerStBetAmount;
+      pots[j].potSize = pots[j].potSize + newBet - allinPlayerStBetAmount;
+    }
+      else
+        return "error: player can't bet lower than previous player bet in the street"
+
+        //situation where subsequent player with a stack lower than allinAmount goes allin
+
+  // AMIT: set up an output statement here, showing both the input and output
+  console.log("input ", bet);
+  console.log("output");
+}
+
+createSidePot(800, 1);
+
+
+// AMIT'S NOTES ----
+// taking the prompt outside the function.
+let bet = parseInt(prompt("Bet amount is "));//this is the composite bet (main + side pot) of the player next to allinplayer
+sidePotBet(bet);
+
+// to test: make array of bets
+let bets = [10, 20, 30, 25];
+// run a loop on the bets array
+bets.forEach(bet => sidePotBet(bet));
+
+console.log(pots);
+
+
+</script>

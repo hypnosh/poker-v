@@ -40,9 +40,4 @@ const Player = (props) => {
   );
 }
 
-/* const EmptySeat = (props) => {
-  return (
-    <p>Come sit here</p>
-  );
-} */
 export default Player;

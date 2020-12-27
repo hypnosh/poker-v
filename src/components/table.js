@@ -34,20 +34,6 @@ class Table extends Component {
         {
           idx: 2, name: "Pratik", email: "pratad@gmail.com", stack: 8000, bet: 90,
           position: 3, status: "playing"
-        },
-        {
-          idx: 3, name: "Saumitra", stack: 8000, bet: 70,
-          status: "sittingout",
-        },
-        {
-          idx: 4, name: "Saurabh", stack: 8000, bet: 100,
-          status: "playing",
-        },
-        {
-          idx: 5, name: "Premi", stack: 8000, bet: 120,
-        },
-        {
-          idx: 6, name: "Manish", stack: 8000, bet: 60,
         }
       ],
       playerAction: 1,
@@ -86,7 +72,7 @@ class Table extends Component {
         let me = this.state.players.filter(player => {
           return (player.email === user.providerData[0].email);
         })[0];
-        
+
         this.setState({
           authenticated: true,
           user: user.providerData[0],
@@ -128,8 +114,8 @@ class Table extends Component {
 
           console.log ("Peer on");
           peer.on('open', (id) => {
-            console.log({ on: "open" });
-            console.log({ PeerID: id });
+            // console.log({ on: "open" });
+            // console.log({ PeerID: id });
           });
           // if already sitting
           // console.log(this.state.me, this.state.me.position);
@@ -179,14 +165,18 @@ class Table extends Component {
   setRemoteVideoRef = ref => {
     // console.log(ref);
     if (ref) {
-      let playerID = (ref.getAttribute('index'));
+      let playerID = ref.getAttribute('index');
       this.remoteVideoRef[playerID] = ref;
     }
   }
 
 
-  generatePeerId = (peerID) => {
-    return `p-${peerID}-thistable`; //${this.state.tableID}`;
+  generatePeerId = (peerID, reverse = false) => {
+    if (reverse) {
+      return parseInt(peerID.substr(2));
+    } else {
+      return `p-${peerID}-thistable`; //${this.state.tableID}`;
+    }
   } // generatePeerId
 
   addVideoStream = (peerID, stream, muted) => {
@@ -196,7 +186,9 @@ class Table extends Component {
       video = this.localVideoRef;
     } else {
       // identify other players' videos
-      video = this.remoteVideoRef[this.generatePeerId(peerID)];
+      video = this.remoteVideoRef[peerID];
+      // console.log("video obj");
+      // console.log(video);
     }
     if (video) {
       video.srcObject = stream;
@@ -211,9 +203,6 @@ class Table extends Component {
       // console.log('mycam');
       const localStream = await this.mediaStream(this.constraints);
       this.addVideoStream("me", localStream, "mute");
-      // let myVideo = document.querySelector("#" + myID + "-container");
-      // myVideo.classList.add('myVideo');
-      // myVideo.classList.remove('video-container');
 
       this.state.peer.on('call', call => {
         console.log({ on: "call" });
@@ -221,14 +210,14 @@ class Table extends Component {
         call.answer(localStream);
         call.on('stream', stream => {
           console.log({ on: "stream, inside call" });
-          this.addVideoStream(call.peer, stream);
+          // extract player number
+          this.addVideoStream(this.generatePeerId(call.peer, true), stream);
         });
       });
       this.setState({
         localStream: localStream
       });
       // checkVideo();
-
     }
   }
   mediaStream = async (constraints) => {
@@ -241,10 +230,11 @@ class Table extends Component {
     }
   }
   connectToUser = (peerID) => {
-    console.log(`peerID@247: --${peerID}--`);
+    console.log(`peerID@229: --${peerID}--`);
     // console.log({connecttouser: peerID});
     console.log("connecting to peer ", this.generatePeerId(peerID));
-    let peer = this.state.peer, stream = this.state.localStream;
+    let peer = this.state.peer,
+        stream = this.state.localStream;
     let thisCall = peer.call(this.generatePeerId(peerID), stream);
     console.log("thiscall");
     console.log(thisCall); // returns undefined!!!
