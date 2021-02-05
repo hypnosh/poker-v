@@ -41,7 +41,7 @@ exports.SitIn = functions.https.onCall((data, context) => {
         let smallBlind = numPlaying[1].idx;
         let bigBlind = numPlaying[0].idx;
         const betObjectInit = {
-          "preflop": [ 
+          "preflop": [
             0, 0, 0, 0, 0, 0
           ],
           "flop": [
@@ -128,23 +128,29 @@ const dealCards = async (tableID, numPlaying) => {
   river = cards[cardIndex];
   // will need to increment if we do run it twice some day
 
+  // compareHands now
+  let handValues = compareHands(playerHands, flop, turn, river);
+
   return db.collection("hands").add({
     table: tableID,
     playerHands: playerHands,
     flop: flop,
     turn: turn,
     river: river,
+    handValues: handValues
   });
   // create a new hand doc. store the hand ID in table doc
-}
+} // dealCards()
 
-exports.Bet = functions.https.onCall((data, context) => {
+exports.Bet = functions.https.onCall(async (data, context) => {
   const { tableID, handID, street, playerID, bet, action, allIn } = data;
   // update table with tableID for street , bet of playerID
 
+  // refactor with async/await?
+
   // update bet branch with existing data + new data
-  db.collection("bets").doc(tableID).get()
-    .then(snapshot => {
+  let snapshot = await db.collection("bets").doc(tableID).get();
+    // .then(snapshot => {
       const betObject = snapshot.data(); // get data from client
       const thisStreet = betObject[street];  // get the old bets in this street
       const oldBet = thisStreet[playerID]; // get the player's old bet in this street
@@ -153,14 +159,16 @@ exports.Bet = functions.https.onCall((data, context) => {
       thisStreet[playerID] = newBet; // set the new bet in the street
       betObject[street] = thisStreet; // set the main object
       // update table with new bet & action
-      db.collection("tables").doc(tableID).get()
-        .then(doc => {
+
+      let doc = await db.collection("tables").doc(tableID).get();
+      // db.collection("tables").doc(tableID).get()
+      //   .then(doc => {
           const docData = {...doc.data()};
           const players = docData.players;
           const thisPlayerIndex = players.findIndex(player => (player.idx === playerID));
-          const potsize = docData.pot;
-          const playerAction = docData.playerAction;
-          const street = docData.street;
+          let potsize = docData.pot;
+          let playerAction = docData.playerAction;
+          let street1 = docData.street;
 
           players[thisPlayerIndex].bet = newBet;
           players[thisPlayerIndex].status = action;
@@ -182,13 +190,13 @@ exports.Bet = functions.https.onCall((data, context) => {
           if (condition) {
             switch(street) {
               case "preflop":
-                street = "flop";
+                street1 = "flop";
               break;
               case "flop":
-                street = "turn";
+                street1 = "turn";
               break;
               case "turn":
-                street = "river";
+                street1 = "river";
               break;
               case "river":
               // compare hands and show
@@ -201,14 +209,14 @@ exports.Bet = functions.https.onCall((data, context) => {
           docData.pot = potsize;
           docData.players[thisPlayerIndex].stack = stack;
           docData.playerAction = playerAction;
-          docData.status = (allIn ? "All in" : (action ==  "fold" : "fold" ? playerStatus));
+          docData.status = (allIn ? "All in" : (action == "fold" ? "fold" : playerStatus));
 
           // write potsize, player's stack, street, playerAction
-          return db.collection("tables").doc(tableID).update(docData);
-        });
+          let tableUpdateID = db.collection("tables").doc(tableID).update(docData);
+        // });
       // write to db
-      return db.collection("bets").doc(tableID).update(betObject);
-    }).catch(error => error);
+      let betUpdateID = db.collection("bets").doc(tableID).update(betObject);
+    // }).catch(error => error);
 }); // Bet
 
 

@@ -6,6 +6,8 @@ import { auth, db, svrfunctions as fbfn } from '../services/firebase';
 // import { doOffer, doAnswer, doLogin, doCandidate } from '../helpers/FirebaseModule';
 import Peer from 'peerjs';
 import '../styles/game.css';
+// import { useBeforeunload } from 'react-beforeunload';
+
 
 const _sitIn = fbfn.httpsCallable('SitIn');
 const _Bet = fbfn.httpsCallable('Bet');
@@ -59,11 +61,12 @@ class Table extends Component {
       this.remoteVideoRef[i] = React.createRef;
     }
     // this.remoteVideoRef = React.createRef();
-  }
-  constraints = {
-    video: { facingMode: "user" },
-    audio: true
-  };
+    this.constraints = {
+      video: { facingMode: "user" },
+      audio: true
+    };
+  } // constructor
+
   async componentDidMount() {
     // get user's details
     // auth.currentUser
@@ -155,6 +158,7 @@ class Table extends Component {
     // get table details - ID from props
     // get hand details - ID from table record - listen
     // get bids - listen
+
   } // componentDidMount
 
   setLocalVideoRef = ref => {
@@ -197,7 +201,9 @@ class Table extends Component {
         video.play();
       });
     }
-  }
+  } // addVideoStream
+
+
   loadLocalstream = async (myID) => {
     if (navigator.mediaDevices.getUserMedia) {
       // console.log('mycam');
@@ -219,7 +225,7 @@ class Table extends Component {
       });
       // checkVideo();
     }
-  }
+  } // loadLocalstream
   mediaStream = async (constraints) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -228,7 +234,7 @@ class Table extends Component {
       console.log({ mediaStreamError: error });
       return false;
     }
-  }
+  } // mediaStream
   connectToUser = (peerID) => {
     console.log(`peerID@229: --${peerID}--`);
     // console.log({connecttouser: peerID});
@@ -251,7 +257,7 @@ class Table extends Component {
         // });
       });
     }
-  }
+  } // connectToUser
 
   takeSeat = (event) => {
     // console.log("takeSeat");
@@ -273,7 +279,7 @@ class Table extends Component {
         // console.log("SitIn error ----");
         console.error(error);
       });
-  }
+  } // takeSeat
 
   callSize = () => {
     // figure out what the minimum bet or call size can be
@@ -282,7 +288,7 @@ class Table extends Component {
       return (prev.bet > current.bet) ? prev: current;
     });
     return highestBidder.bet;
-  }
+  } // callSize
   foldAction = () => {
     // send fold action - fold()
     _Bet({
@@ -296,7 +302,7 @@ class Table extends Component {
     }).catch(error => {
       console.log(error);
     });
-  }
+  } // foldAction
   callAction = () => {
     // send check or call action - bet(0) or bet(call)
     this.setState({myBet: this.callSize()});
@@ -314,7 +320,7 @@ class Table extends Component {
     }).catch(error => {
       console.log(error);
     });
-  }
+  } // callAction
   raiseAction = () => {
     if (this.state.raiseFlag) {
       // read the raise amount and call the function - bet(raise)
@@ -337,7 +343,7 @@ class Table extends Component {
     } else {
       this.setState({raiseFlag: true});
     }
-  }
+  } // raiseAction
 
   render() {
     let flop = (

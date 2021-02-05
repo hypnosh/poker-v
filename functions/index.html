@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Hi</title>
+    <script type="text/javascript" src="hands.js"></script>
+    <style media="screen">
+      .left {
+        width: 49%;
+        float: left;
+      }
+      .right {
+        width: 49%;
+        float: right;
+      }
+      #flop:before, #turn:before, #river:before {
+        color: #777;
+        font-size: .5em;
+        vertical-align: top;
+        padding-right: 5px;
+      }
+      #flop:before {
+        content: 'flop';
+      }
+      #turn:before {
+        content: 'turn';
+      }
+      #river:before {
+        content: 'river';
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="left">
+      <textarea id="hands" rows="8" cols="80"></textarea>
+    </div>
+    <div class="right">
+      <span id="flop"></span>
+      <span id="turn"></span>
+      <span id="river"></span>
+    </div>
+    <br clear="all" />
+    <button type="button" id="action">Calculate</button>
+    <br clear="all" />
+    <textarea id="output" rows="20" cols="80"></textarea>
+  </body>
+  <script type="text/javascript">
+    const pick = (selector) => {
+      return document.querySelector(selector);
+    }
+
+    playerHands = [["5h", "As"], ["5d", "Ac"]];
+    flop = ["7c", "9h", "Kc"];
+    turn = "Jc";
+    river = "4c";
+
+    let hands = pick("#hands").value;
+    let actionButton = pick("#action");
+    let output = pick("#output");
+    pick("#flop").innerText = flop;
+    pick("#turn").innerText = turn;
+    pick("#river").innerText = river;
+
+
+    actionButton.onclick = () => {
+      // let handsArray = hands.split(",").map(card => rankToNum[card[0]]);
+      // let flopRanks = flop.map(card => rankToNum[card[0]]);
+      // let turnRank = rankToNum[turn[0]];
+      // let riverRank = rankToNum[river[0]];
+      // // output.value = base13([...handsArray, ...flopRanks, turnRank, riverRank]);
+      // output.value = base13(handsArray);
+      // output.value = compareHands(handsArray, flop, turn, river);
+      unitTesting();
+    }
+
+    function unitTesting() {
+      var cards = [],
+          suites = ['s', 'd', 'c', 'h'],
+          ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'];
+      for (var i = 0; i < 52; i++) {
+        let rank = ranks[i % 13];
+        let suite = suites[parseInt(i/13)];
+        // let suiteSymbol = suitesSymbols[parseInt(i/13)];
+        cards[i] = rank + suite;
+      }
+      for (var hand = 0; hand < 152; hand++) {
+        cards.sort(() => Math.random() - 0.5);
+        var thisHand = cards.slice(0,7);
+        var result = temp(thisHand, hand);
+        var moreData = [];
+        if (result.flush.flushSuite !== "none") {
+          moreData.push("flush");
+        }
+        if (result.straight > 0) {
+          moreData.push("straight");
+        }
+        if (result.rankHands.quads !== undefined) {
+          moreData.push("quad");
+        }
+        if (result.rankHands.triads !== undefined) {
+          moreData.push("triad");
+        }
+        if (result.rankHands.pairs.length == 1) {
+          moreData.push("pair");
+        }
+        if (result.rankHands.pairs.length == 2) {
+          moreData.push("2pair");
+        }
+
+        output.value += (result.player + " - " + thisHand.join() + " - " + result.handValue + " - " + moreData.join() + "\n");
+      }
+    }
+  </script>
+</html>

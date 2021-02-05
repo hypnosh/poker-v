@@ -1,27 +1,60 @@
-playerHands = [["5h", "As"], ["5d", "Ac"]];
-flop = ["7c", "9h", "Kc"];
-turn = "Jc";
-river = "4c";
+const debug = true;
+
+const rankToNum = {
+  "2": 2,
+  "3": 3,
+  "4": 4,
+  "5": 5,
+  "6": 6,
+  "7": 7,
+  "8": 8,
+  "9": 9,
+  "T": 10,
+  "J": 11,
+  "Q": 12,
+  "K": 13,
+  "A": 14,
+};
+
+const straightflushEpoch  = 1200000,
+      quadsEpoch          = 1100000,
+      fullhouseEpoch      = 1000000,
+      flushEpoch          =  700000,
+      straightEpoch       =  600000,
+      triadsEpoch         =  500000,
+      twopairsEpoch       =  400000,
+      pairEpoch           =  300000;
+
 
 const compareHands = (playerHands, flop, turn, river) => {
-  
+  // playerHands is an array of arrays (consisting of hands of all players)
   let completeHands = playerHands.map((hand, index) => {
     return [...hand, ...flop, turn, river];
   });
 
-
   let handRanks = completeHands.map((hand, index) => {
     let cardRanks = hand.map((card, index) => {
-      return card[0];
+      return rankToNum[card[0]];
     });
     let cardSuites = hand.map((card, index) => {
       return card[1];
     });
     let handObject = bestHand(cardRanks, cardSuites, index);
-    return handObject.handRank;
+    return handObject.handValue;
   });
 
-  return handRanks;
+  return handValues;
+}
+
+const temp = (hand, index) => {
+  let cardRanks = hand.map((card, index) => {
+    return rankToNum[card[0]];
+  });
+  let cardSuites = hand.map((card, index) => {
+    return card[1];
+  });
+  let handObject = bestHand(cardRanks, cardSuites, index);
+  return handObject;
 }
 
 function bestHand(playerHandRanks, playerHandSuites, player) {
@@ -38,103 +71,98 @@ function bestHand(playerHandRanks, playerHandSuites, player) {
   // Check for pair, mark rank + final 3 cards
   // Mark all 5 cards
 
-  var quadsEpoch = 11,
-      fullhouseEpoch = 168,
-      flushEpoch = 335,
-      straightEpoch = 1613,
-      triadsEpoch = 1623,
-      twopairEpoch = 1910,
-      pairEpoch = 2197;
-
   var flush = isFlush(playerHandRanks, playerHandSuites);
   var rankHands = isRankHands(playerHandRanks);
   var straight = isStraight(playerHandRanks);
-  var handRank;
+  let handValue = 0;
   // Straight & Royal Flush
   if (flush.flushSuite !== "none") {
     var straightFlush = isStraight(flush.flushRanks);
-    if (straightFlush === 14) {
-      // Royal Flush
-      handRank = 1;
-    } else if (straightFlush > 0) {
-      // Straight Flush
-      handRank = 1 + 14 - straightFlush;
+    if (straightFlush > 0) {
+      // Royal & Straight Flush
+      handValue = straightflushEpoch + straightFlush;
     } else {
       // only Flush
-      handRank = flushEpoch;
+      handValue = flushEpoch + base13(flush.flushRanks) - 211629;
     }
   } // check for flushes
 
-  if (straight > 0) {
-    handRank = straightEpoch;
+  if (handValue < straightflushEpoch && rankHands.quads !== undefined) {
+    handValue = quadsEpoch + base13([rankHands.quads, rankHands.lones[0]], false) - 29;
   }
-
-  if (rankHands.quads !== undefined) {
-    handRank = quadsEpoch;
+  if (handValue < straightEpoch && straight > 0) {
+    handValue = straightEpoch + straight;
   }
-  // if (straightFlush > 0) {
-  //   // straight flush
-  // } else if (rankHands.quads !== undefined) {
-  //   // quads
-  // } else if ((rankHands.triads !== undefined) and (rankHands.pairs !== undefined)) {
-  //   // full house
-  // } else if (flush.flushSuite !== "none") {
-  //   // flush
-  // } else if (straight > 0) {
-  //   // straight
-  // } else if (rankHands.triads !== undefined) {
-  //   // trips
-  // } else if (rankHands.pairs.length == 2) {
-  //   // two pairs
-  // } else if (rankHands.pairs.length == 1) {
-  //   // one pair
-  // }
+  // console.log(handValue);
 
+  // console.log(handValue);
+  if (rankHands.triads !== undefined) {
+    if (handValue < fullhouseEpoch && rankHands.pairs.length > 0) {
+      // full house
+      handValue = fullhouseEpoch + base13([rankHands.triads, rankHands.pairs[0]], false) - 29;
+      // console.log(handValue);
+    } else if (handValue < triadsEpoch){
+      // only triad
+      handValue = triadsEpoch + base13([rankHands.triads, rankHands.lones[0], rankHands.lones[1]], false) - 537;
+      // console.log(handValue);
+    }
+  }
+  if (handValue < twopairsEpoch && rankHands.pairs.length === 2) {
+    // two pairs
+    handValue = twopairsEpoch + base13([rankHands.pairs[0], rankHands.pairs[1], rankHands.lones[0]], false) - 537;
+  } else if (handValue < pairEpoch && rankHands.pairs.length === 1) {
+    // one pair
+    handValue = pairEpoch + base13([rankHands.pairs[0], rankHands.lones[0], rankHands.lones[1], rankHands.lones[2]], false) - 5294;
+    // console.log(handValue);
+  } else if (handValue === 0) {
+    // high card
+    handValue = base13(playerHandRanks) - 211629;
+    // console.log(handValue);
+  }
+  // console.log(handValue);
 
-  // the chain
-
-  var output = [
+  var output = {
     player,
     flush,
     rankHands,
     straight,
-    handRank
-  ];
+    handValue
+  };
 
-
-  console.log({
-    player,
-    flush,
-    rankHands,
-    straight
-  });
   return output;
 
 } // bestHand
 
 
-function isRankHands(playerHandRanks) {
-  var cardCount = [], specialCounts = {}, pairs = [], quads, triads;
-  for (var i = 2; i < 15; i++) {
-    cardCount[i] = playerHandRanks.filter(rank => rank === i).length; // what am i trying to do here?
-    if (cardCount[i] === 4) {
-      // quads
+const isRankHands = (playerHandRanks) => {
+  var cardCount = [], specialCounts = {}, pairs = [], quads, triads, lones = [];
+  playerHandRanks.forEach((card, i) => {
+    cardCount[card] = (isNaN(cardCount[card]) ? 1 : cardCount[card] + 1);
+  });
+  // quads
+  cardCount.forEach((count, i) => {
+    if (count === 4) {
       quads = i;
-    } else if (cardCount[i] === 3) {
-      // triads
+    } else if (count === 3) {
       triads = i;
-    } else if (cardCount[i] === 2) {
+    } else if (count === 2) {
       pairs.push(i);
+    } else if (count === 1) {
+      lones.push(i);
     }
-  }
-  specialCounts.pairs = pairs;
-  specialCounts.triads = triads;
-  specialCounts.quads = quads;
-  return specialCounts;
+  });
+  lones = lones.sort((a,b) => (b-a));
+  pairs = pairs.sort((a,b) => (b-a));
+  return {
+    lones,
+    pairs,
+    triads,
+    quads
+  };
 } // isRankHands
-function isStraight(playerHandRanks) {
+const isStraight = (playerHandRanks) => {
   var phr = [... new Set(playerHandRanks)];
-  if (phr.some((a) => (a === 14))) { phr.push(1); }
+  if (phr.some((a) => (a === 14))) { phr.push(1); } // if there is an A in the hand, then consider it as both 14 and 1
   phr.sort((a, b) => {return a - b});
   switch (true) {
     case (phr[6] - phr[2] === 4):
@@ -150,7 +178,7 @@ function isStraight(playerHandRanks) {
       return 0;
   }
 } // isStraight
-function isFlush(playerHandRanks, playerHandSuites) {
+const isFlush = (playerHandRanks, playerHandSuites) => {
   var s, d, c, h;
   var spadesCount = playerHandSuites.filter(suite => suite === "s").length;
   var diamsCount = playerHandSuites.filter(suite => suite === "d").length;
@@ -180,10 +208,33 @@ function isFlush(playerHandRanks, playerHandSuites) {
         flushRanks.push(playerHandRanks[i]);
       }
     }
-    flushRanks.sort((a, b) => a - b);
+    flushRanks.sort((a, b) => b - a);
+
+    // base 13 values
   }
   return ({
     flushSuite,
     flushRanks
   });
 } // isFlush
+
+const base13 = (ranks, sorting = true) => {
+  // the function returns a unified integer value for the hand ranks.
+  // Higher the number, better the rank.
+  // Do not pass sequence of 5 or more, or pairs, triads, quads.
+  // Deduplicate if there are pairs, triads, quads
+
+  // sort descending if sorting == true, pick first 5 ranks
+  // (or less if shorter array passed)
+
+  ranks = (sorting ? ranks.sort((a, b) => (b - a)) : ranks).slice(0, 5);
+
+  let modded = [];
+  ranks.forEach((item, i) => {
+    baseNot = Math.pow(13, (ranks.length-i-1)); // value of the position
+    let itemRank = item * baseNot; // value of the card at this position
+    modded[i] = itemRank;
+  });
+  let moddedSum = modded.reduce((sum, i) => sum + i); // final sum
+  return moddedSum;
+} // base13
