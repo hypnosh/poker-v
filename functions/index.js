@@ -3,7 +3,20 @@ const functions = require('firebase-functions');
 
 admin.initializeApp();
 const db = admin.firestore();
-
+const betObjectInit = {
+  "preflop": [
+    0, 0, 0, 0, 0, 0
+  ],
+  "flop": [
+    0, 0, 0, 0, 0, 0
+  ],
+  "turn": [
+    0, 0, 0, 0, 0, 0
+  ],
+  "river": [
+    0, 0, 0, 0, 0, 0
+  ]
+};
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
 //
@@ -12,7 +25,7 @@ const db = admin.firestore();
 //   response.send("Hello from Firebase!");
 // });
 
-exports.SitIn = functions.https.onCall((data, context) => {
+exports.SitIn = functions.https.onCall(async(data, context) => {
   const tableID = data.tableID;
   const email = data.email;
   const position = data.position;
@@ -40,30 +53,16 @@ exports.SitIn = functions.https.onCall((data, context) => {
         let buttonPos = numPlaying[0].idx;
         let smallBlind = numPlaying[1].idx;
         let bigBlind = numPlaying[0].idx;
-        const betObjectInit = {
-          "preflop": [
-            0, 0, 0, 0, 0, 0
-          ],
-          "flop": [
-            0, 0, 0, 0, 0, 0
-          ],
-          "turn": [
-            0, 0, 0, 0, 0, 0
-          ],
-          "river": [
-            0, 0, 0, 0, 0, 0
-          ]
-        }
 
         // deal
-        dealCards(tableID, numPlaying).then(docRef => {
-          db.collection("tables").doc(tableID).update({
-            handID: docRef.id
-          });
-          // create a betting branch for this table
-          db.collection("bets").doc(tableID).set(betObjectInit);
-          return ([tableID, handID]);
-        }).catch(error => error);
+        let docRef = await dealCards(tableID, numPlaying); //.then(docRef => {
+        db.collection("tables").doc(tableID).update({
+          handID: docRef.id
+        });
+        // create a betting branch for this table
+        db.collection("bets").doc(tableID).set(betObjectInit);
+        // return ([tableID, handID]);
+        // }).catch(error => error);
       }
 
       return db.collection("tables").doc(tableID).set(docData);
@@ -209,7 +208,7 @@ exports.Bet = functions.https.onCall(async (data, context) => {
           docData.pot = potsize;
           docData.players[thisPlayerIndex].stack = stack;
           docData.playerAction = playerAction;
-          docData.status = (allIn ? "All in" : (action == "fold" ? "fold" : playerStatus));
+          docData.status = (allIn ? "All in" : (action === "fold" ? "fold" : playerStatus));
 
           // write potsize, player's stack, street, playerAction
           let tableUpdateID = db.collection("tables").doc(tableID).update(docData);
