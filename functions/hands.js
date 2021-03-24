@@ -26,7 +26,7 @@ const straightflushEpoch  = 1200000,
       pairEpoch           =  300000;
 
 
-const compareHands = (playerHands, flop, turn, river) => {
+exports.CompareHands = function(playerHands, flop, turn, river) {
   // playerHands is an array of arrays (consisting of hands of all players)
   let completeHands = playerHands.map((hand, index) => {
     return [...hand, ...flop, turn, river];
@@ -57,7 +57,7 @@ const temp = (hand, index) => {
   return handObject;
 }
 
-function bestHand(playerHandRanks, playerHandSuites, player) {
+const bestHand = (playerHandRanks, playerHandSuites, player) => {
   // Sequence:
   // Check for flush, get top and bottom card in the top 5 of the suite
   //   If A & 10, then Royal Flush

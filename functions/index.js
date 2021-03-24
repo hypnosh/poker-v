@@ -1,8 +1,12 @@
+const CompareHands = require('./hands.js');
+
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
 
 admin.initializeApp();
 const db = admin.firestore();
+
+
 const betObjectInit = {
   "preflop": [
     0, 0, 0, 0, 0, 0
@@ -17,57 +21,50 @@ const betObjectInit = {
     0, 0, 0, 0, 0, 0
   ]
 };
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-// exports.helloWorld = functions.https.onRequest((request, response) => {
-//   functions.logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
 
 exports.SitIn = functions.https.onCall(async(data, context) => {
   const tableID = data.tableID;
   const email = data.email;
   const position = data.position;
   const name = data.name;
-  return db.collection("tables").doc(tableID).get()
-    .then(doc => {
-      if (!(doc && doc.exists)) {
-        return "error: no such table";
-      }
-      const docData = {...doc.data()};
-      const players = docData.players;
-      const thisPlayerIndex = players.findIndex(player => (player.email === email));
-      players[thisPlayerIndex].position = position;
-      players[thisPlayerIndex].name = name;
-      players[thisPlayerIndex].status = "playing";
+  let doc = await db.collection("tables").doc(tableID); //.get()
+    // .then(doc => {
+  if (!(doc && doc.exists)) {
+    return "error: no such table";
+  }
+  const docData = {...doc.data()};
+  const players = docData.players;
+  const thisPlayerIndex = players.findIndex(player => (player.email === email));
+  players[thisPlayerIndex].position = position;
+  players[thisPlayerIndex].name = name;
+  players[thisPlayerIndex].status = "playing";
 
-      // check if two players are sitting
-      var numPlaying = players.filter((player) => {
-        return (player.position !== undefined && player.status === "playing");
-      });
+  // check if two players are sitting
+  var numPlaying = players.filter((player) => {
+    return (player.position !== undefined && player.status === "playing");
+  });
 
-      if (numPlaying.length === 2) {
-        // start the game
-        // who is the button, sb, bb
-        let buttonPos = numPlaying[0].idx;
-        let smallBlind = numPlaying[1].idx;
-        let bigBlind = numPlaying[0].idx;
+  if (numPlaying.length === 2) {
+    // start the game
+    // who is the button, sb, bb
+    let buttonPos = numPlaying[0].idx;
+    let smallBlind = numPlaying[1].idx;
+    let bigBlind = numPlaying[0].idx;
 
-        // deal
-        let docRef = await dealCards(tableID, numPlaying); //.then(docRef => {
-        db.collection("tables").doc(tableID).update({
-          handID: docRef.id
-        });
-        // create a betting branch for this table
-        db.collection("bets").doc(tableID).set(betObjectInit);
-        // return ([tableID, handID]);
-        // }).catch(error => error);
-      }
-
-      return db.collection("tables").doc(tableID).set(docData);
-      // write to firebase
+    // deal
+    let docRef = await dealCards(tableID, numPlaying); //.then(docRef => {
+    db.collection("tables").doc(tableID).update({
+      handID: docRef.id
     });
+    // create a betting branch for this table
+    db.collection("bets").doc(tableID).set(betObjectInit);
+    // return ([tableID, handID]);
+    // }).catch(error => error);
+  }
+
+  return db.collection("tables").doc(tableID).set(docData);
+  // write to firebase
+    // });
 
 }); // SitIn
 
@@ -128,7 +125,7 @@ const dealCards = async (tableID, numPlaying) => {
   // will need to increment if we do run it twice some day
 
   // compareHands now
-  let handValues = compareHands(playerHands, flop, turn, river);
+  let handValues = CompareHands(playerHands, flop, turn, river);
 
   return db.collection("hands").add({
     table: tableID,
@@ -220,23 +217,23 @@ exports.Bet = functions.https.onCall(async (data, context) => {
 
 
 
-exports.DummyDeal = functions.https.onRequest((req, res) => {
+exports.DummyDeal = functions.https.onRequest(async(req, res) => {
   // just to test if dealCards() is working fine.
   // will remove in production.
 
   let plyrs = JSON.parse("[{\"idx\":0,\"name\":\"A\"},{\"idx\":1,\"name\":\"A\"},{\"idx\":2,\"name\":\"A\"},{\"idx\":3,\"name\":\"A\"}]"),
   tableID = "2zLwrEyJWbOg1MIpmVUJ";
 
-  dealCards(tableID, plyrs).then(docRef => {
+  let docRef = await dealCards(tableID, plyrs); //.then(docRef => {
     console.log("cards dealt ", docRef.id);
     db.collection("tables").doc(tableID).update({
       handID: docRef.id
     });
     return docRef.id;
-  }).catch(error => {
-    console.log("error in dealing ", error);
-    return error;
-  });
+  // }).catch(error => {
+  //   console.log("error in dealing ", error);
+  //   return error;
+  // });
   //   throw (error);
   // });
 }); // DummyDeal
